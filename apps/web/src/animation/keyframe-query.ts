@@ -1,10 +1,5 @@
-import type {
-	AnimationBindingInstance,
-	AnimationChannel,
-	AnimationPath,
-	ElementAnimations,
-	ElementKeyframe,
-} from "@/animation/types";
+import type { AnimationBindingInstance, AnimationChannel, AnimationPath, ElementAnimations } from "@/model/decorations/animations";
+import type { ElementKeyframe } from "@/animation/types";
 import {
 	type AnimationComponentValue,
 	composeAnimationValue,

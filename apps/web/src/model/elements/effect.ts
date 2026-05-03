@@ -1,4 +1,4 @@
-import type { ParamValues } from "@/params";
+import type { ParamValues } from "@/model/decorations/param-values";
 import type { BaseTimelineElement } from "./base";
 
 export interface EffectElement extends BaseTimelineElement {

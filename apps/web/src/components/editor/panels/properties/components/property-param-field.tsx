@@ -1,6 +1,6 @@
 "use client";
 
-import type { ParamDefinition, NumberParamDefinition } from "@/params";
+import type { NumberParamDefinition, ParamDefinition } from "@/model/decorations/param-values";
 import {
 	formatNumberForDisplay,
 	getFractionDigitsForStep,

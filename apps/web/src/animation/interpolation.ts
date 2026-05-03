@@ -1,13 +1,4 @@
-import type {
-	AnimationChannel,
-	AnimationInterpolation,
-	AnimationValue,
-	DiscreteAnimationChannel,
-	DiscreteValue,
-	ScalarAnimationChannel,
-	ScalarAnimationKey,
-	ScalarSegmentType,
-} from "@/animation/types";
+import type { AnimationChannel, AnimationInterpolation, AnimationValue, DiscreteAnimationChannel, DiscreteValue, ScalarAnimationChannel, ScalarAnimationKey, ScalarSegmentType } from "@/model/decorations/animations";
 import {
 	getBezierPoint,
 	getDefaultLeftHandle,

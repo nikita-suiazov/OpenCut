@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import type { BlendMode } from "@/rendering";
 import type { ElementType } from "@/model";
-import type { ElementAnimations } from "@/animation/types";
+import type { ElementAnimations } from "@/model/decorations/animations";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { RainDropIcon } from "@hugeicons/core-free-icons";
 import { KeyframeToggle } from "@/components/editor/panels/properties/components/keyframe-toggle";

@@ -3,7 +3,7 @@ import {
 	getKeyframeAtTime,
 	hasKeyframesForPath,
 } from "@/animation";
-import type { AnimationPropertyPath, ElementAnimations } from "@/animation/types";
+import type { AnimationPropertyPath, ElementAnimations } from "@/model/decorations/animations";
 import type { TimelineElement } from "@/model";
 import { upsertElementKeyframe } from "@/timeline/animation-properties";
 import { snapToStep } from "@/utils/math";

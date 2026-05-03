@@ -6,7 +6,7 @@ import {
 	intensityToSigma,
 } from "@/effects/definitions/blur";
 import { effectsRegistry, resolveEffectPasses } from "@/effects";
-import type { Effect, EffectPass } from "@/effects/types";
+import type { Effect, EffectPass } from "@/model/decorations/effect";
 import { getSourceTimeAtClipTime } from "@/retime";
 import {
 	DEFAULT_GRAPHIC_SOURCE_SIZE,

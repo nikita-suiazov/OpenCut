@@ -1,5 +1,5 @@
-import type { EffectPass } from "@/effects/types";
-import type { ParamValues } from "@/params";
+import type { EffectPass } from "@/model/decorations/effect";
+import type { ParamValues } from "@/model/decorations/param-values";
 import { BaseNode } from "./base-node";
 
 export type EffectLayerNodeParams = {

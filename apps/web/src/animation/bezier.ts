@@ -1,4 +1,4 @@
-import type { ScalarAnimationKey } from "@/animation/types";
+import type { ScalarAnimationKey } from "@/model/decorations/animations";
 
 const BEZIER_SOLVE_ITERATIONS = 20;
 

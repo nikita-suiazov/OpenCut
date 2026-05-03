@@ -5,7 +5,7 @@ import {
 } from "@/animation";
 import { Command, type CommandResult } from "@/commands/base-command";
 import { updateElementInSceneTracks } from "@/timeline";
-import type { AnimationPath, AnimationValue } from "@/animation/types";
+import type { AnimationPath, AnimationValue } from "@/model/decorations/animations";
 import type { SceneTracks, TimelineElement } from "@/model";
 import { resolveAnimationTarget } from "@/timeline/animation-targets";
 

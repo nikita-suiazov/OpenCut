@@ -4,7 +4,7 @@ import {
 	getCustomMaskClosedStateAfterPointRemoval,
 	removeCustomMaskPoints,
 } from "@/masks/custom-path";
-import type { CustomMask } from "@/masks/types";
+import type { CustomMask } from "@/model/decorations/mask";
 import { isMaskableElement, updateElementInSceneTracks } from "@/timeline";
 import type { MaskableElement, SceneTracks } from "@/model";
 

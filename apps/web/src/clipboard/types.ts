@@ -1,11 +1,6 @@
 import type { EditorCore } from "@/core";
-import type {
-	AnimationInterpolation,
-	AnimationPath,
-	AnimationValue,
-	ScalarCurveKeyframePatch,
-	SelectedKeyframeRef,
-} from "@/animation/types";
+import type { AnimationInterpolation, AnimationPath, AnimationValue } from "@/model/decorations/animations";
+import type { ScalarCurveKeyframePatch, SelectedKeyframeRef } from "@/animation/types";
 import type { Command } from "@/commands/base-command";
 import type { CreateTimelineElement, ElementRef, TrackType } from "@/model";
 

@@ -1,4 +1,4 @@
-import type { EffectPass } from "@/effects/types";
+import type { EffectPass } from "@/model/decorations/effect";
 import type { RetimeConfig } from "@/model";
 import { BaseNode } from "./base-node";
 

@@ -1,4 +1,4 @@
-import type { ParamDefinition, ParamValues } from "@/params";
+import type { ParamDefinition, ParamValues } from "@/model/decorations/param-values";
 
 export function buildDefaultParamValues(
 	params: ParamDefinition[],

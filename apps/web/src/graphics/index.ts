@@ -1,7 +1,7 @@
 import { resolveGraphicParamsAtTime } from "@/animation";
-import type { ElementAnimations } from "@/animation/types";
+import type { ElementAnimations } from "@/model/decorations/animations";
 import { buildDefaultParamValues } from "@/params/registry";
-import type { ParamValues } from "@/params";
+import type { ParamValues } from "@/model/decorations/param-values";
 import { graphicsRegistry } from "./registry";
 import {
 	registerDefaultGraphics,

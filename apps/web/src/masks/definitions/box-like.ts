@@ -3,15 +3,9 @@ import {
 	MIN_MASK_DIMENSION,
 } from "@/masks/dimensions";
 import { computeFeatherUpdate } from "../param-update";
-import type {
-	BaseMaskParams,
-	MaskDefaultContext,
-	MaskFeatures,
-	MaskInteractionDefinition,
-	MaskParamUpdateArgs,
-	RectangleMaskParams,
-} from "@/masks/types";
-import type { NumberParamDefinition, ParamDefinition } from "@/params";
+import type { BaseMaskParams, RectangleMaskParams } from "@/model/decorations/mask";
+import type { MaskDefaultContext, MaskFeatures, MaskInteractionDefinition, MaskParamUpdateArgs } from "@/masks/types";
+import type { NumberParamDefinition, ParamDefinition } from "@/model/decorations/param-values";
 import {
 	getBoxMaskHandlePositions,
 	getBoxMaskOverlays,

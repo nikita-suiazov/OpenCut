@@ -1,9 +1,6 @@
 import { computeFeatherUpdate } from "../param-update";
-import type {
-	MaskDefinition,
-	MaskParamUpdateArgs,
-	SplitMaskParams,
-} from "@/masks/types";
+import type { SplitMaskParams } from "@/model/decorations/mask";
+import type { MaskDefinition, MaskParamUpdateArgs } from "@/masks/types";
 import { halfPlaneSign, lineEdgeIntersection } from "../utils";
 import {
 	getLineMaskHandlePositions,

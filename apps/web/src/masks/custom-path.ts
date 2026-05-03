@@ -1,14 +1,6 @@
 import type { ElementBounds } from "@/preview/element-bounds";
-
-export interface CustomMaskPathPoint {
-	id: string;
-	x: number;
-	y: number;
-	inX: number;
-	inY: number;
-	outX: number;
-	outY: number;
-}
+import type { CustomMaskPathPoint } from "@/model/decorations/mask";
+export type { CustomMaskPathPoint } from "@/model/decorations/mask";
 
 export type CustomMaskHandlePart = "anchor" | "in" | "out";
 

@@ -1,4 +1,4 @@
-import type { NormalizedCubicBezier } from "@/animation/types";
+import type { NormalizedCubicBezier } from "@/model/decorations/animations";
 
 export const PRESET_MATCH_TOLERANCE = 0.02;
 

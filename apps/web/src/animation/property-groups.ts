@@ -1,9 +1,5 @@
-import type {
-	AnimationPropertyGroup,
-	AnimationPropertyPath,
-	ElementAnimations,
-} from "@/animation/types";
-import { ANIMATION_PROPERTY_GROUPS } from "@/animation/types";
+import type { AnimationPropertyGroup, AnimationPropertyPath, ElementAnimations } from "@/model/decorations/animations";
+import { ANIMATION_PROPERTY_GROUPS } from "@/model/decorations/animations";
 import { getKeyframeAtTime } from "./keyframe-query";
 
 export interface GroupKeyframeRef {

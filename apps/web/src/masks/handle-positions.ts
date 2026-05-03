@@ -1,14 +1,7 @@
 import { FEATHER_HANDLE_SCALE } from "@/masks/feather";
 import type { ElementBounds } from "@/preview/element-bounds";
-import type {
-	MaskFeatures,
-	MaskHandlePosition,
-	MaskLineOverlay,
-	MaskOverlay,
-	MaskRectOverlay,
-	RectangleMaskParams,
-	MaskShapeOverlay,
-} from "@/masks/types";
+import type { RectangleMaskParams } from "@/model/decorations/mask";
+import type { MaskFeatures, MaskHandlePosition, MaskLineOverlay, MaskOverlay, MaskRectOverlay, MaskShapeOverlay } from "@/masks/types";
 
 const LINE_HANDLE_OFFSET_SCREEN_PX = 20;
 const BOX_HANDLE_OFFSET_SCREEN_PX = 20;

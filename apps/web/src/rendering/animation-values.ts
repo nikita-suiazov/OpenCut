@@ -1,4 +1,4 @@
-import type { ElementAnimations } from "@/animation/types";
+import type { ElementAnimations } from "@/model/decorations/animations";
 import { resolveAnimationPathValueAtTime } from "@/animation";
 import type { Transform } from "./index";
 

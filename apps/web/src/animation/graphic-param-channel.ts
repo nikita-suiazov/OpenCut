@@ -1,8 +1,5 @@
-import type {
-	ElementAnimations,
-	GraphicParamPath,
-} from "@/animation/types";
-import type { ParamDefinition, ParamValues } from "@/params";
+import type { ElementAnimations, GraphicParamPath } from "@/model/decorations/animations";
+import type { ParamDefinition, ParamValues } from "@/model/decorations/param-values";
 import { resolveAnimationPathValueAtTime } from "./resolve";
 
 export const GRAPHIC_PARAM_PATH_PREFIX = "params.";

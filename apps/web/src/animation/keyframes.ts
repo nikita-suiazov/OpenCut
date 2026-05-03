@@ -1,18 +1,5 @@
-import type {
-	AnimationBindingInstance,
-	AnimationBindingKind,
-	AnimationChannel,
-	AnimationInterpolation,
-	AnimationPath,
-	AnimationValue,
-	DiscreteAnimationChannel,
-	DiscreteAnimationKey,
-	ElementAnimations,
-	ScalarAnimationChannel,
-	ScalarAnimationKey,
-	ScalarCurveKeyframePatch,
-	ScalarSegmentType,
-} from "@/animation/types";
+import type { AnimationBindingInstance, AnimationBindingKind, AnimationChannel, AnimationInterpolation, AnimationPath, AnimationValue, DiscreteAnimationChannel, DiscreteAnimationKey, ElementAnimations, ScalarAnimationChannel, ScalarAnimationKey, ScalarSegmentType } from "@/model/decorations/animations";
+import type { ScalarCurveKeyframePatch } from "@/animation/types";
 import {
 	cloneAnimationBinding,
 	createAnimationBinding,

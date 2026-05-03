@@ -1,8 +1,4 @@
-import type {
-	AnimationPath,
-	AnimationValueForPath,
-	ElementAnimations,
-} from "@/animation/types";
+import type { AnimationPath, AnimationValueForPath, ElementAnimations } from "@/model/decorations/animations";
 import {
 	type AnimationComponentValue,
 	composeAnimationValue,

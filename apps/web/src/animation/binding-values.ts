@@ -1,18 +1,5 @@
 import { converter, formatHex, formatHex8, parse } from "culori";
-import type {
-	AnimationBindingComponent,
-	AnimationBindingOfKind,
-	AnimationBindingInstance,
-	AnimationBindingKind,
-	ColorAnimationBinding,
-	DiscreteAnimationBinding,
-	NumberAnimationBinding,
-	AnimationPath,
-	AnimationValue,
-	DiscreteValue,
-	Vector2AnimationBinding,
-	VectorValue,
-} from "@/animation/types";
+import type { AnimationBindingComponent, AnimationBindingInstance, AnimationBindingKind, AnimationBindingOfKind, AnimationPath, AnimationValue, ColorAnimationBinding, DiscreteAnimationBinding, DiscreteValue, NumberAnimationBinding, Vector2AnimationBinding, VectorValue } from "@/model/decorations/animations";
 import { clamp } from "@/utils/math";
 
 interface LinearRgba {

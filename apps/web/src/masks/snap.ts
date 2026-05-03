@@ -8,7 +8,7 @@ import {
 	type ScaleEdgePreference,
 	type PreviewSnapLine,
 } from "@/preview/preview-snap";
-import type { RectangleMaskParams, SplitMaskParams } from "@/masks/types";
+import type { RectangleMaskParams, SplitMaskParams } from "@/model/decorations/mask";
 import {
 	isRectangleMaskParams,
 	getMaskSnapGeometry,

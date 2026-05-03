@@ -1,5 +1,5 @@
 import type { BlendMode } from "@/rendering";
-import type { EffectPass } from "@/effects/types";
+import type { EffectPass } from "@/model/decorations/effect";
 
 export type FrameDescriptor = {
 	width: number;

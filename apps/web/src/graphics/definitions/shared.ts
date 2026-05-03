@@ -1,4 +1,4 @@
-import type { ParamDefinition } from "@/params";
+import type { ParamDefinition } from "@/model/decorations/param-values";
 
 export type GraphicStrokeAlign = "inside" | "center" | "outside";
 

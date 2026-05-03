@@ -17,7 +17,8 @@ import {
 	type PreviewSnapLine,
 } from "@/preview/preview-snap";
 import type { SelectedMaskPointSelection } from "@/selection/editor-selection";
-import type { Mask, MaskInteractionResult } from "@/masks/types";
+import type { Mask } from "@/model/decorations/mask";
+import type { MaskInteractionResult } from "@/masks/types";
 import type { MaskableElement } from "@/model";
 import { registerCanceller } from "@/editor/cancel-interaction";
 

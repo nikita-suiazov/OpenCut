@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { generateUUID } from "@/utils/id";
-import type { NormalizedCubicBezier } from "@/animation/types";
+import type { NormalizedCubicBezier } from "@/model/decorations/animations";
 import type { EasingPreset } from "./easing-presets";
 
 const STORAGE_KEY = "graph-editor-presets";

@@ -1,11 +1,5 @@
-import type {
-	AnimationBindingInstance,
-	AnimationPath,
-	ElementAnimations,
-	ScalarAnimationChannel,
-	ScalarGraphChannel,
-	ScalarGraphKeyframeContext,
-} from "@/animation/types";
+import type { AnimationBindingInstance, AnimationPath, ElementAnimations, ScalarAnimationChannel } from "@/model/decorations/animations";
+import type { ScalarGraphChannel, ScalarGraphKeyframeContext } from "@/animation/types";
 
 export interface EditableScalarChannels {
 	binding: AnimationBindingInstance;

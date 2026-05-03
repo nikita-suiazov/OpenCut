@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditor } from "@/editor/use-editor";
 import { registerCanceller } from "@/editor/cancel-interaction";
-import type { NormalizedCubicBezier } from "@/animation/types";
+import type { NormalizedCubicBezier } from "@/model/decorations/animations";
 import { useKeyframeSelection } from "@/timeline/hooks/element/use-keyframe-selection";
 import {
 	applyGraphEditorCurvePreview,

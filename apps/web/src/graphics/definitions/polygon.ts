@@ -1,4 +1,4 @@
-import type { ParamDefinition } from "@/params";
+import type { ParamDefinition } from "@/model/decorations/param-values";
 import { applyAlignedStroke } from "../stroke";
 import { STROKE_ALIGN_PARAM, type GraphicStrokeAlign } from "./shared";
 import type { GraphicDefinition } from "../types";

@@ -1,4 +1,4 @@
-import type { AnimationPath, AnimationPropertyPath } from "@/animation/types";
+import type { AnimationPath, AnimationPropertyPath } from "@/model/decorations/animations";
 import { ANIMATION_PROPERTY_PATHS } from "./types";
 import { isEffectParamPath } from "./effect-param-channel";
 import { isGraphicParamPath } from "./graphic-param-channel";

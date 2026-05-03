@@ -7,7 +7,7 @@ import {
 import { updateElementInSceneTracks } from "@/timeline";
 import { isVisualElement } from "@/timeline/element-utils";
 import { resolveAnimationTarget } from "@/timeline/animation-targets";
-import type { AnimationInterpolation } from "@/animation/types";
+import type { AnimationInterpolation } from "@/model/decorations/animations";
 import type { SceneTracks } from "@/model";
 
 export class UpsertEffectParamKeyframeCommand extends Command {

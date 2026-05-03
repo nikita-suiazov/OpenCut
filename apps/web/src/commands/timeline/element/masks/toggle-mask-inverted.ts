@@ -1,7 +1,7 @@
 import { EditorCore } from "@/core";
 import { Command, type CommandResult } from "@/commands/base-command";
 import { isMaskableElement, updateElementInSceneTracks } from "@/timeline";
-import type { Mask } from "@/masks/types";
+import type { Mask } from "@/model/decorations/mask";
 import type { MaskableElement, SceneTracks } from "@/model";
 
 export function toggleMaskInvertedOnElement({

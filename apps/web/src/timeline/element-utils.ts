@@ -5,7 +5,7 @@ import { DEFAULTS } from "@/timeline/defaults";
 import type { MediaType } from "@/media/types";
 import { buildDefaultEffectInstance } from "@/effects";
 import { buildDefaultGraphicInstance } from "@/graphics";
-import type { ParamValues } from "@/params";
+import type { ParamValues } from "@/model/decorations/param-values";
 import { capitalizeFirstLetter } from "@/utils/string";
 
 export function canElementHaveAudio(

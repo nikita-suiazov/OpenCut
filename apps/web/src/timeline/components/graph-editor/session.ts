@@ -6,14 +6,8 @@ import {
 	getScalarKeyframeContext,
 	updateScalarKeyframeCurve,
 } from "@/animation";
-import type {
-	AnimationPath,
-	ElementAnimations,
-	NormalizedCubicBezier,
-	ScalarCurveKeyframePatch,
-	ScalarGraphKeyframeContext,
-	SelectedKeyframeRef,
-} from "@/animation/types";
+import type { AnimationPath, ElementAnimations, NormalizedCubicBezier } from "@/model/decorations/animations";
+import type { ScalarCurveKeyframePatch, ScalarGraphKeyframeContext, SelectedKeyframeRef } from "@/animation/types";
 import type { SceneTracks, TimelineElement } from "@/model";
 
 const GRAPH_LINEAR_CURVE: NormalizedCubicBezier = [0, 0, 1, 1];

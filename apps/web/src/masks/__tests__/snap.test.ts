@@ -15,12 +15,7 @@ import { textMaskDefinition } from "@/masks/definitions/text";
 import { getMaskSnapGeometry } from "@/masks/geometry";
 import { snapMaskInteraction } from "@/masks/snap";
 import type { ElementBounds } from "@/preview/element-bounds";
-import type {
-	CustomMaskParams,
-	RectangleMaskParams,
-	SplitMaskParams,
-	TextMaskParams,
-} from "@/masks/types";
+import type { CustomMaskParams, RectangleMaskParams, SplitMaskParams, TextMaskParams } from "@/model/decorations/mask";
 
 const bounds: ElementBounds = {
 	cx: 200,

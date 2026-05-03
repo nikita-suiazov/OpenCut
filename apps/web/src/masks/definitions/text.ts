@@ -1,10 +1,6 @@
-import type { ParamDefinition } from "@/params";
-import type {
-	MaskDefinition,
-	MaskParamUpdateArgs,
-	TextMask,
-	TextMaskParams,
-} from "@/masks/types";
+import type { ParamDefinition } from "@/model/decorations/param-values";
+import type { TextMask, TextMaskParams } from "@/model/decorations/mask";
+import type { MaskDefinition, MaskParamUpdateArgs } from "@/masks/types";
 import { DEFAULTS } from "@/timeline/defaults";
 import { MIN_FONT_SIZE, MAX_FONT_SIZE } from "@/text/typography";
 import {

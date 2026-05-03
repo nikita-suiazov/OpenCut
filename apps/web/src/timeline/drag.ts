@@ -1,5 +1,5 @@
 import type { MaskableElement, VisualElement } from "@/model";
-import type { ParamValues } from "@/params";
+import type { ParamValues } from "@/model/decorations/param-values";
 
 interface BaseDragData {
 	id: string;

@@ -4,11 +4,7 @@ import { upsertPathKeyframe } from "@/animation";
 import { updateElementInSceneTracks } from "@/timeline";
 import type { SceneTracks } from "@/model";
 import { resolveAnimationTarget } from "@/timeline/animation-targets";
-import type {
-	AnimationPath,
-	AnimationInterpolation,
-	AnimationValue,
-} from "@/animation/types";
+import type { AnimationInterpolation, AnimationPath, AnimationValue } from "@/model/decorations/animations";
 
 export class UpsertKeyframeCommand extends Command {
 	private savedState: SceneTracks | null = null;

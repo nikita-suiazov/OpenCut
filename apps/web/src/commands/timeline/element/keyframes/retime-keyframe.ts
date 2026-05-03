@@ -2,7 +2,7 @@ import { EditorCore } from "@/core";
 import { retimeElementKeyframe } from "@/animation";
 import { Command, type CommandResult } from "@/commands/base-command";
 import { updateElementInSceneTracks } from "@/timeline";
-import type { AnimationPath } from "@/animation/types";
+import type { AnimationPath } from "@/model/decorations/animations";
 import type { SceneTracks } from "@/model";
 import { resolveAnimationTarget } from "@/timeline/animation-targets";
 

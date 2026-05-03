@@ -7,15 +7,13 @@ import {
 	hasKeyframesForPath,
 	upsertPathKeyframe,
 } from "@/animation";
-import type {
-	ElementAnimations,
-} from "@/animation/types";
+import type { ElementAnimations } from "@/model/decorations/animations";
 import {
 	coerceAnimationParamValue,
 	getAnimationParamDefaultInterpolation,
 	getAnimationParamValueKind,
 } from "@/animation/animated-params";
-import type { ParamDefinition } from "@/params";
+import type { ParamDefinition } from "@/model/decorations/param-values";
 import type { TimelineElement } from "@/model";
 
 export interface KeyframedParamPropertyResult {

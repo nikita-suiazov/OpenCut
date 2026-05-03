@@ -1,27 +1,12 @@
-import type { ParamDefinition, ParamValues } from "@/params";
+import type { ParamDefinition, ParamValues } from "@/model/decorations/param-values";
+import type { EffectPass, EffectPassTemplate } from "@/model/decorations/effect";
 
-export interface Effect {
-	id: string;
-	type: string;
-	params: ParamValues;
-	enabled: boolean;
-}
-
-export type EffectUniformValue = number | number[];
-
-export interface EffectPass {
-	shader: string;
-	uniforms: Record<string, EffectUniformValue>;
-}
-
-export interface EffectPassTemplate {
-	shader: string;
-	uniforms(params: {
-		effectParams: ParamValues;
-		width: number;
-		height: number;
-	}): Record<string, EffectUniformValue>;
-}
+export type {
+	Effect,
+	EffectPass,
+	EffectPassTemplate,
+	EffectUniformValue,
+} from "@/model/decorations/effect";
 
 export interface EffectRendererConfig {
 	passes: EffectPassTemplate[];

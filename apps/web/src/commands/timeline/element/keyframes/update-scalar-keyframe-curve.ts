@@ -5,10 +5,8 @@ import {
 import { Command, type CommandResult } from "@/commands/base-command";
 import { updateElementInSceneTracks } from "@/timeline";
 import { resolveAnimationTarget } from "@/timeline/animation-targets";
-import type {
-	AnimationPath,
-	ScalarCurveKeyframePatch,
-} from "@/animation/types";
+import type { AnimationPath } from "@/model/decorations/animations";
+import type { ScalarCurveKeyframePatch } from "@/animation/types";
 import type { SceneTracks } from "@/model";
 
 export class UpdateScalarKeyframeCurveCommand extends Command {

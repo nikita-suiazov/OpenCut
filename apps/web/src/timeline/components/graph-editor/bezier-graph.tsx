@@ -3,7 +3,7 @@
 import { useRef, useState, type PointerEvent } from "react";
 import { useShiftKey } from "@/hooks/use-shift-key";
 import { getBezierPoint } from "@/animation/bezier";
-import type { NormalizedCubicBezier } from "@/animation/types";
+import type { NormalizedCubicBezier } from "@/model/decorations/animations";
 import { cn } from "@/utils/ui";
 
 const GRAPH_WIDTH = 140;

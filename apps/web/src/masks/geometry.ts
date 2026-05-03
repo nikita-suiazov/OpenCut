@@ -1,7 +1,7 @@
 import type { ElementBounds } from "@/preview/element-bounds";
 import type { PreviewSnapLine } from "@/preview/preview-snap";
 import { MIN_MASK_DIMENSION } from "@/masks/dimensions";
-import type { RectangleMaskParams } from "@/masks/types";
+import type { RectangleMaskParams } from "@/model/decorations/mask";
 
 type CenterMaskParams = {
 	centerX: number;

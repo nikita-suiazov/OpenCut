@@ -1,4 +1,5 @@
-import type { MaskDefinition, RectangleMaskParams } from "@/masks/types";
+import type { RectangleMaskParams } from "@/model/decorations/mask";
+import type { MaskDefinition } from "@/masks/types";
 import {
 	BOX_LIKE_MASK_PARAMS,
 	buildBoxMaskInteraction,

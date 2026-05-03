@@ -1,4 +1,5 @@
-import type { BaseMaskParams, MaskDefinition } from "@/masks/types";
+import type { BaseMaskParams } from "@/model/decorations/mask";
+import type { MaskDefinition } from "@/masks/types";
 import { masksRegistry, type MaskIconProps } from "../registry";
 import { cinematicBarsMaskDefinition } from "./cinematic-bars";
 import { customMaskDefinition } from "./custom";

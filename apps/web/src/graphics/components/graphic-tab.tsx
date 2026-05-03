@@ -6,7 +6,7 @@ import {
 	useKeyframedParamProperty,
 	type KeyframedParamPropertyResult,
 } from "@/components/editor/panels/properties/hooks/use-keyframed-param-property";
-import type { ParamDefinition, ParamValues } from "@/params";
+import type { ParamDefinition, ParamValues } from "@/model/decorations/param-values";
 import type { GraphicElement } from "@/model";
 import {
 	graphicsRegistry,

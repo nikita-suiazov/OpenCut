@@ -1,15 +1,9 @@
 import { generateUUID } from "@/utils/id";
-import type { ParamDefinition } from "@/params";
+import type { ParamDefinition } from "@/model/decorations/param-values";
 import { PEN_CURSOR } from "@/preview/components/cursors";
 import type { ElementBounds } from "@/preview/element-bounds";
-import type {
-	CustomMask,
-	CustomMaskParams,
-	MaskDefinition,
-	MaskHandlePosition,
-	MaskOverlay,
-	MaskParamUpdateArgs,
-} from "@/masks/types";
+import type { CustomMask, CustomMaskParams } from "@/model/decorations/mask";
+import type { MaskDefinition, MaskHandlePosition, MaskOverlay, MaskParamUpdateArgs } from "@/masks/types";
 import {
 	buildCustomMaskPath2D,
 	buildCustomMaskSvgPath,

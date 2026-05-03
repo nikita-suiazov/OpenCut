@@ -1,4 +1,5 @@
-import type { EffectDefinition, EffectPass } from "@/effects/types";
+import type { EffectPass } from "@/model/decorations/effect";
+import type { EffectDefinition } from "@/effects/types";
 
 export const GAUSSIAN_BLUR_SHADER = "gaussian-blur";
 

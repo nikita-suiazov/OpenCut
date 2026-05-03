@@ -1,5 +1,5 @@
 import { cloneAnimations } from "@/animation";
-import type { ElementAnimations } from "@/animation/types";
+import type { ElementAnimations } from "@/model/decorations/animations";
 import type { MediaAsset } from "@/media/types";
 import { DEFAULTS } from "@/timeline/defaults";
 import type { AudioElement, CreateUploadAudioElement, TimelineElement, VideoElement } from "@/model";

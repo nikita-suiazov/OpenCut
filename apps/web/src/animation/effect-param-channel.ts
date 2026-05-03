@@ -1,8 +1,5 @@
-import type {
-	ElementAnimations,
-	EffectParamPath,
-} from "@/animation/types";
-import type { ParamValues } from "@/params";
+import type { EffectParamPath, ElementAnimations } from "@/model/decorations/animations";
+import type { ParamValues } from "@/model/decorations/param-values";
 import { removeElementKeyframe } from "./keyframes";
 import { resolveAnimationPathValueAtTime } from "./resolve";
 

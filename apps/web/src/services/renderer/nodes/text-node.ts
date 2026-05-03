@@ -1,6 +1,6 @@
 import { BaseNode } from "./base-node";
 import type { TextElement } from "@/model";
-import type { EffectPass } from "@/effects/types";
+import type { EffectPass } from "@/model/decorations/effect";
 import type { Transform } from "@/rendering";
 import { drawMeasuredTextLayout } from "@/text/primitives";
 import type { MeasuredTextElement } from "@/text/measure-element";

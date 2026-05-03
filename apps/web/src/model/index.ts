@@ -1,4 +1,5 @@
 export * from "./bookmark";
+export * from "./decorations";
 export * from "./element-ref";
 export * from "./elements";
 export * from "./ids";

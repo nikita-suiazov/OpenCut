@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { ParamValues } from "@/params";
-import type { Effect } from "@/effects/types";
+import type { ParamValues } from "@/model/decorations/param-values";
+import type { Effect } from "@/model/decorations/effect";
 import type { EffectElement, VisualElement } from "@/model";
 import { effectsRegistry } from "@/effects";
 import { useEditor } from "@/editor/use-editor";

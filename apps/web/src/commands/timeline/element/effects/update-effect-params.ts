@@ -1,7 +1,7 @@
 import { Command, type CommandResult } from "@/commands/base-command";
 import { EditorCore } from "@/core";
 import { isVisualElement, updateElementInSceneTracks } from "@/timeline";
-import type { ParamValues } from "@/params";
+import type { ParamValues } from "@/model/decorations/param-values";
 import type { SceneTracks, VisualElement } from "@/model";
 
 function updateEffectParamsOnElement({

@@ -2,11 +2,7 @@ import {
 	getDefaultLeftHandle,
 	getDefaultRightHandle,
 } from "@/animation/bezier";
-import type {
-	CurveHandle,
-	NormalizedCubicBezier,
-	ScalarAnimationKey,
-} from "@/animation/types";
+import type { CurveHandle, NormalizedCubicBezier, ScalarAnimationKey } from "@/model/decorations/animations";
 
 const VALUE_EPSILON = 1e-6;
 

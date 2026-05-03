@@ -1,8 +1,8 @@
 "use client";
 
 import type { MaskableElement } from "@/model";
-import type { Mask, MaskType, TextMask } from "@/masks/types";
-import type { NumberParamDefinition, SelectParamDefinition } from "@/params";
+import type { Mask, MaskType, TextMask } from "@/model/decorations/mask";
+import type { NumberParamDefinition, SelectParamDefinition } from "@/model/decorations/param-values";
 import { masksRegistry, buildDefaultMaskInstance } from "@/masks";
 import { useEditor } from "@/editor/use-editor";
 import { useElementPreview } from "@/timeline/hooks/use-element-preview";

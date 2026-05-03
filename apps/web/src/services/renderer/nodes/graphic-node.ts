@@ -4,7 +4,7 @@ import {
 	getGraphicDefinition,
 	registerDefaultGraphics,
 } from "@/graphics";
-import type { ParamValues } from "@/params";
+import type { ParamValues } from "@/model/decorations/param-values";
 import {
 	VisualNode,
 	type ResolvedVisualNodeState,

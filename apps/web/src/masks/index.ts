@@ -1,4 +1,5 @@
-import type { Mask, MaskDefaultContext, MaskType } from "@/masks/types";
+import type { Mask, MaskType } from "@/model/decorations/mask";
+import type { MaskDefaultContext } from "@/masks/types";
 import { masksRegistry } from "./registry";
 import { generateUUID } from "@/utils/id";
 

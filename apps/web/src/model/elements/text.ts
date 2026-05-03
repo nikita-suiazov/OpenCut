@@ -1,4 +1,4 @@
-import type { Effect } from "@/effects/types";
+import type { Effect } from "@/model/decorations/effect";
 import type { BlendMode, Transform } from "@/rendering";
 import type { BaseTimelineElement } from "./base";
 

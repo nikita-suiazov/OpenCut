@@ -1,10 +1,4 @@
-import type {
-	AnimationBindingKind,
-	AnimationInterpolation,
-	AnimationPath,
-	AnimationValue,
-	NumericSpec,
-} from "@/animation/types";
+import type { AnimationBindingKind, AnimationInterpolation, AnimationPath, AnimationValue, NumericSpec } from "@/model/decorations/animations";
 import {
 	coerceAnimationParamValue,
 	getAnimationParamDefaultInterpolation,
@@ -19,7 +13,7 @@ import {
 } from "@/animation/graphic-param-channel";
 import { effectsRegistry, registerDefaultEffects } from "@/effects";
 import { getGraphicDefinition } from "@/graphics";
-import type { ParamDefinition } from "@/params";
+import type { ParamDefinition } from "@/model/decorations/param-values";
 import type { TimelineElement } from "@/model";
 import { isVisualElement } from "@/timeline/element-utils";
 import { isAnimationPropertyPath } from "@/animation/path";

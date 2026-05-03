@@ -1,8 +1,9 @@
 import { generateUUID } from "@/utils/id";
 import { buildDefaultParamValues } from "@/params/registry";
 import { effectsRegistry } from "./registry";
-import type { ParamValues } from "@/params";
-import type { Effect, EffectDefinition, EffectPass } from "@/effects/types";
+import type { ParamValues } from "@/model/decorations/param-values";
+import type { Effect, EffectPass } from "@/model/decorations/effect";
+import type { EffectDefinition } from "@/effects/types";
 import { VISUAL_ELEMENT_TYPES } from "@/model";
 
 export { effectsRegistry } from "./registry";

@@ -1,11 +1,4 @@
-import type {
-	AnimationBindingKind,
-	AnimationInterpolation,
-	AnimationPropertyPath,
-	AnimationValue,
-	ElementAnimations,
-	NumericSpec,
-} from "@/animation/types";
+import type { AnimationBindingKind, AnimationInterpolation, AnimationPropertyPath, AnimationValue, ElementAnimations, NumericSpec } from "@/model/decorations/animations";
 import { upsertPathKeyframe } from "@/animation";
 import { parseColorToLinearRgba } from "@/animation/binding-values";
 import { isAnimationPropertyPath } from "@/animation/path";

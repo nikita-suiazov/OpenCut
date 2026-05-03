@@ -1,6 +1,6 @@
 import type { EditorCore } from "@/core";
 import type { ElementBounds } from "@/preview/element-bounds";
-import type { ParamValues } from "@/params";
+import type { ParamValues } from "@/model/decorations/param-values";
 import type { RetimeConfig, SceneTracks, TimelineElement, TimelineTrack, TrackType } from "@/model";
 import { calculateTotalDuration } from "@/timeline";
 import { TimelineDragSource } from "@/timeline/drag-source";
@@ -9,13 +9,8 @@ import {
 	canElementBeHidden,
 	canElementHaveAudio,
 } from "@/timeline/element-utils";
-import type {
-	AnimationPath,
-	AnimationInterpolation,
-	AnimationValue,
-	AnimationValueForPath,
-	ScalarCurveKeyframePatch,
-} from "@/animation/types";
+import type { AnimationInterpolation, AnimationPath, AnimationValue, AnimationValueForPath } from "@/model/decorations/animations";
+import type { ScalarCurveKeyframePatch } from "@/animation/types";
 import {
 	getElementLocalTime,
 	resolveAnimationPathValueAtTime,

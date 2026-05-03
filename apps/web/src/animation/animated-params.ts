@@ -1,5 +1,5 @@
 import { snapToStep } from "@/utils/math";
-import type { ParamDefinition } from "@/params";
+import type { ParamDefinition } from "@/model/decorations/param-values";
 import type { DynamicAnimationPathValue, NumericSpec } from "./types";
 
 export function getAnimationParamValueKind({

@@ -2,7 +2,7 @@ import { EditorCore } from "@/core";
 import { Command, type CommandResult } from "@/commands/base-command";
 import { insertPointOnCustomMaskSegment } from "@/masks/definitions/custom";
 import type { ElementBounds } from "@/preview/element-bounds";
-import type { CustomMask } from "@/masks/types";
+import type { CustomMask } from "@/model/decorations/mask";
 import { isMaskableElement, updateElementInSceneTracks } from "@/timeline";
 import type { MaskableElement, SceneTracks } from "@/model";
 

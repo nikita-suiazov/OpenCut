@@ -1,4 +1,4 @@
-import type { ParamDefinition, ParamValues } from "@/params";
+import type { ParamDefinition, ParamValues } from "@/model/decorations/param-values";
 
 export const DEFAULT_GRAPHIC_SOURCE_SIZE = 512;
 

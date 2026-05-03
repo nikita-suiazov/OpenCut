@@ -1,135 +1,34 @@
 import type { ElementBounds } from "@/preview/element-bounds";
 import type { PreviewSnapLine } from "@/preview/preview-snap";
-import type { ParamDefinition } from "@/params";
-import type { CustomMaskPathPoint } from "@/masks/custom-path";
+import type { ParamDefinition } from "@/model/decorations/param-values";
 import type {
+	BaseMaskParams,
+	Mask,
+	MaskType,
+} from "@/model/decorations/mask";
+
+export type {
+	BaseMaskParams,
+	CinematicBarsMask,
+	CustomMask,
+	CustomMaskParams,
+	CustomMaskPathPoint,
+	DiamondMask,
+	EllipseMask,
+	HeartMask,
+	Mask,
+	MaskType,
+	RectangleMask,
+	RectangleMaskParams,
+	SplitMask,
+	SplitMaskParams,
+	StarMask,
 	TextDecoration,
 	TextFontStyle,
 	TextFontWeight,
-} from "@/text/primitives";
-
-export type MaskType =
-	| "split"
-	| "cinematic-bars"
-	| "rectangle"
-	| "ellipse"
-	| "heart"
-	| "diamond"
-	| "star"
-	| "text"
-	| "custom";
-
-export interface BaseMaskParams {
-	feather: number;
-	inverted: boolean;
-	strokeColor: string;
-	strokeWidth: number;
-	strokeAlign: "inside" | "center" | "outside";
-}
-
-export interface SplitMaskParams extends BaseMaskParams {
-	centerX: number;
-	centerY: number;
-	rotation: number;
-}
-
-export interface RectangleMaskParams extends BaseMaskParams {
-	centerX: number;
-	centerY: number;
-	width: number;
-	height: number;
-	rotation: number;
-	scale: number;
-}
-
-export interface TextMaskParams extends BaseMaskParams {
-	content: string;
-	fontSize: number;
-	fontFamily: string;
-	fontWeight: TextFontWeight;
-	fontStyle: TextFontStyle;
-	textDecoration: TextDecoration;
-	letterSpacing: number;
-	lineHeight: number;
-	centerX: number;
-	centerY: number;
-	rotation: number;
-	scale: number;
-}
-
-export interface CustomMaskParams extends BaseMaskParams {
-	path: CustomMaskPathPoint[];
-	closed: boolean;
-	centerX: number;
-	centerY: number;
-	rotation: number;
-	scale: number;
-}
-
-export interface SplitMask {
-	id: string;
-	type: "split";
-	params: SplitMaskParams;
-}
-
-export interface CinematicBarsMask {
-	id: string;
-	type: "cinematic-bars";
-	params: RectangleMaskParams;
-}
-
-export interface RectangleMask {
-	id: string;
-	type: "rectangle";
-	params: RectangleMaskParams;
-}
-
-export interface EllipseMask {
-	id: string;
-	type: "ellipse";
-	params: RectangleMaskParams;
-}
-
-export interface HeartMask {
-	id: string;
-	type: "heart";
-	params: RectangleMaskParams;
-}
-
-export interface DiamondMask {
-	id: string;
-	type: "diamond";
-	params: RectangleMaskParams;
-}
-
-export interface StarMask {
-	id: string;
-	type: "star";
-	params: RectangleMaskParams;
-}
-
-export interface TextMask {
-	id: string;
-	type: "text";
-	params: TextMaskParams;
-}
-
-export interface CustomMask {
-	id: string;
-	type: "custom";
-	params: CustomMaskParams;
-}
-
-export type Mask =
-	| SplitMask
-	| CinematicBarsMask
-	| RectangleMask
-	| EllipseMask
-	| HeartMask
-	| DiamondMask
-	| StarMask
-	| TextMask
-	| CustomMask;
+	TextMask,
+	TextMaskParams,
+} from "@/model/decorations/mask";
 
 export interface MaskRenderer {
 	buildPath?: (params: {

@@ -1,14 +1,7 @@
 import { MAX_FEATHER } from "@/masks/feather";
-import type { ParamDefinition } from "@/params";
-import type {
-	BaseMaskParams,
-	MaskDefaultContext,
-	MaskDefinition,
-	MaskInteractionResult,
-	MaskSnapArgs,
-	MaskSnapResult,
-	MaskType,
-} from "@/masks/types";
+import type { ParamDefinition } from "@/model/decorations/param-values";
+import type { BaseMaskParams, MaskType } from "@/model/decorations/mask";
+import type { MaskDefaultContext, MaskDefinition, MaskInteractionResult, MaskSnapArgs, MaskSnapResult } from "@/masks/types";
 import type { HugeiconsIconProps } from "@hugeicons/react";
 import { DefinitionRegistry } from "@/params/registry";
 

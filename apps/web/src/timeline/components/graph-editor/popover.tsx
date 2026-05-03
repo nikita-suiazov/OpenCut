@@ -12,7 +12,7 @@ import {
 	PlusSignIcon,
 } from "@hugeicons/core-free-icons";
 import { getBezierPoint } from "@/animation/bezier";
-import type { NormalizedCubicBezier } from "@/animation/types";
+import type { NormalizedCubicBezier } from "@/model/decorations/animations";
 import type { GraphEditorComponentOption } from "./session";
 import {
 	BUILTIN_PRESETS,

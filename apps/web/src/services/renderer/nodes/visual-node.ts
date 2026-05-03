@@ -1,6 +1,6 @@
 import { BaseNode } from "./base-node";
-import type { Effect, EffectPass } from "@/effects/types";
-import type { Mask } from "@/masks/types";
+import type { Effect, EffectPass } from "@/model/decorations/effect";
+import type { Mask } from "@/model/decorations/mask";
 import type { BlendMode, Transform } from "@/rendering";
 import type { RetimeConfig, VisualElement } from "@/model";
 

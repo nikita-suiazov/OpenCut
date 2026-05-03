@@ -1,4 +1,4 @@
-import type { ElementAnimations } from "@/animation/types";
+import type { ElementAnimations } from "@/model/decorations/animations";
 import type { ElementId } from "../ids";
 
 export interface BaseTimelineElement {

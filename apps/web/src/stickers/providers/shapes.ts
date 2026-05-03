@@ -1,5 +1,5 @@
 import { buildGraphicPreviewUrl, buildDefaultGraphicInstance, graphicsRegistry, registerDefaultGraphics } from "@/graphics";
-import type { ParamValues } from "@/params";
+import type { ParamValues } from "@/model/decorations/param-values";
 import { buildStickerId, parseStickerId } from "../sticker-id";
 import type {
 	StickerBrowseResult,
