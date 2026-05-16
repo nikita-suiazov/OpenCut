@@ -19,6 +19,17 @@ import {
 } from "@/preview/preview-snap";
 import type { TCanvasSize } from "@/project/types";
 import type { Transform } from "@/rendering";
+import { resolveTransformAtTime } from "@/rendering/animation-values";
+import {
+	getElementLocalTime,
+	hasKeyframesForPath,
+	upsertElementKeyframe,
+} from "@/animation";
+import type {
+	AnimationPropertyPath,
+	ElementAnimations,
+} from "@/animation/types";
+import { mediaTime, type MediaTime } from "@/wasm";
 import { isVisualElement } from "@/timeline/element-utils";
 import type {
 	ElementRef,
@@ -50,7 +61,12 @@ interface PendingGesture extends CapturedPointerState {
 interface DragElementSnapshot {
 	readonly trackId: string;
 	readonly elementId: string;
-	readonly initialTransform: Transform;
+	readonly initialBaseTransform: Transform;
+	readonly initialResolvedTransform: Transform;
+	readonly animations: ElementAnimations | undefined;
+	readonly localTime: MediaTime;
+	readonly hasAnimatedPositionX: boolean;
+	readonly hasAnimatedPositionY: boolean;
 }
 
 interface DraggingGesture extends CapturedPointerState {
@@ -204,8 +220,10 @@ function movedPastDragThreshold({
 
 function toDragElementSnapshots({
 	elementsWithTracks,
+	currentTime,
 }: {
 	elementsWithTracks: Array<{ track: TimelineTrack; element: TimelineElement }>;
+	currentTime: number;
 }): DragElementSnapshot[] {
 	const isVisualTrackedElement = (value: {
 		track: TimelineTrack;
@@ -215,11 +233,107 @@ function toDragElementSnapshots({
 
 	return elementsWithTracks
 		.filter(isVisualTrackedElement)
-		.map(({ track, element }) => ({
-			trackId: track.id,
-			elementId: element.id,
-			initialTransform: element.transform,
-		}));
+		.map(({ track, element }) => {
+			const localTime = mediaTime({
+				ticks: getElementLocalTime({
+					timelineTime: currentTime,
+					elementStartTime: element.startTime,
+					elementDuration: element.duration,
+				}),
+			});
+			return {
+				trackId: track.id,
+				elementId: element.id,
+				initialBaseTransform: element.transform,
+				initialResolvedTransform: resolveTransformAtTime({
+					baseTransform: element.transform,
+					animations: element.animations,
+					localTime,
+				}),
+				animations: element.animations,
+				localTime,
+				hasAnimatedPositionX: hasKeyframesForPath({
+					animations: element.animations,
+					propertyPath: "transform.positionX",
+				}),
+				hasAnimatedPositionY: hasKeyframesForPath({
+					animations: element.animations,
+					propertyPath: "transform.positionY",
+				}),
+			};
+		});
+}
+
+function upsertPositionKeyframe({
+	animations,
+	propertyPath,
+	localTime,
+	value,
+}: {
+	animations: ElementAnimations | undefined;
+	propertyPath: AnimationPropertyPath;
+	localTime: MediaTime;
+	value: number;
+}): ElementAnimations | undefined {
+	return upsertElementKeyframe({
+		animations,
+		propertyPath,
+		time: localTime,
+		value,
+	});
+}
+
+function buildDragPositionUpdates({
+	snapshot,
+	position,
+}: {
+	snapshot: DragElementSnapshot;
+	position: Point;
+}): Partial<TimelineElement> {
+	const hasAnimatedPosition =
+		snapshot.hasAnimatedPositionX || snapshot.hasAnimatedPositionY;
+	const hasStaticPosition =
+		!snapshot.hasAnimatedPositionX || !snapshot.hasAnimatedPositionY;
+	let animations = snapshot.animations;
+	const updates: Partial<TimelineElement> = {};
+
+	if (snapshot.hasAnimatedPositionX) {
+		animations = upsertPositionKeyframe({
+			animations,
+			propertyPath: "transform.positionX",
+			localTime: snapshot.localTime,
+			value: position.x,
+		});
+	}
+
+	if (snapshot.hasAnimatedPositionY) {
+		animations = upsertPositionKeyframe({
+			animations,
+			propertyPath: "transform.positionY",
+			localTime: snapshot.localTime,
+			value: position.y,
+		});
+	}
+
+	if (hasAnimatedPosition) {
+		updates.animations = animations;
+	}
+
+	if (hasStaticPosition) {
+		updates.transform = {
+			...snapshot.initialBaseTransform,
+			position: {
+				x: snapshot.hasAnimatedPositionX
+					? snapshot.initialBaseTransform.position.x
+					: position.x,
+				y: snapshot.hasAnimatedPositionY
+					? snapshot.initialBaseTransform.position.y
+					: position.y,
+			},
+		};
+	}
+
+	return updates;
 }
 
 export class PreviewInteractionController {
@@ -489,6 +603,7 @@ export class PreviewInteractionController {
 			elementsWithTracks: this.deps.timeline.getElementsWithTracks({
 				elements: dragSelection,
 			}),
+			currentTime: this.deps.scene.getCurrentTime(),
 		});
 
 		if (draggableElements.length === 0) {
@@ -536,8 +651,8 @@ export class PreviewInteractionController {
 		const deltaY = currentPos.y - drag.origin.y;
 
 		const proposedPosition = {
-			x: firstElement.initialTransform.position.x + deltaX,
-			y: firstElement.initialTransform.position.y + deltaY,
+			x: firstElement.initialResolvedTransform.position.x + deltaX,
+			y: firstElement.initialResolvedTransform.position.y + deltaY,
 		};
 
 		const shouldSnap = !this.deps.input.isShiftHeld();
@@ -560,23 +675,21 @@ export class PreviewInteractionController {
 		this.deps.preview.onSnapLinesChange?.(activeLines);
 
 		const deltaSnappedX =
-			snappedPosition.x - firstElement.initialTransform.position.x;
+			snappedPosition.x - firstElement.initialResolvedTransform.position.x;
 		const deltaSnappedY =
-			snappedPosition.y - firstElement.initialTransform.position.y;
+			snappedPosition.y - firstElement.initialResolvedTransform.position.y;
 
 		this.deps.timeline.previewElements(
-			drag.elements.map(({ trackId, elementId, initialTransform }) => ({
-				trackId,
-				elementId,
-				updates: {
-					transform: {
-						...initialTransform,
-						position: {
-							x: initialTransform.position.x + deltaSnappedX,
-							y: initialTransform.position.y + deltaSnappedY,
-						},
+			drag.elements.map((snapshot) => ({
+				trackId: snapshot.trackId,
+				elementId: snapshot.elementId,
+				updates: buildDragPositionUpdates({
+					snapshot,
+					position: {
+						x: snapshot.initialResolvedTransform.position.x + deltaSnappedX,
+						y: snapshot.initialResolvedTransform.position.y + deltaSnappedY,
 					},
-				},
+				}),
 			})),
 		);
 	}
