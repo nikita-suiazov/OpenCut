@@ -6,6 +6,7 @@ import {
 	updateElementInSceneTracks,
 } from "@/lib/timeline";
 import { applyElementUpdate } from "@/lib/timeline/update-pipeline";
+import { syncSeamlessBoundaryKeys } from "@/lib/timeline/boundary-sync";
 
 export class UpdateElementsCommand extends Command {
 	private savedState: SceneTracks | null = null;
@@ -60,6 +61,14 @@ export class UpdateElementsCommand extends Command {
 				elementId: updateEntry.elementId,
 				update: () => nextElement,
 			});
+
+			if (updateEntry.patch.animations !== undefined) {
+				updatedTracks = syncSeamlessBoundaryKeys({
+					tracks: updatedTracks,
+					trackId: updateEntry.trackId,
+					elementId: updateEntry.elementId,
+				});
+			}
 		}
 
 		editor.timeline.updateTracks(updatedTracks);
