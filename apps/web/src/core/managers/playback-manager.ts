@@ -61,7 +61,10 @@ export class PlaybackManager {
 	}
 
 	seek({ time }: { time: number }): void {
-		this.currentTime = this.clampTimeToTimeline(time);
+		// Ruler scrubbing derives time from pixels and can pass fractional ticks;
+		// currentTime must stay integral — split/paste/freeze persist it into
+		// element times, and the wasm timecode boundary deserializes them as i64.
+		this.currentTime = this.clampTimeToTimeline(Math.round(time));
 		if (this.isPlaying) {
 			this.playbackStartWallTime = performance.now();
 			this.playbackStartTime = this.currentTime;
