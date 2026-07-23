@@ -24,7 +24,9 @@ export class SplitElementsCommand extends Command {
 	}) {
 		super();
 		this.elements = elements;
-		this.splitTime = splitTime;
+		// Guard against fractional playhead ticks — split times are persisted
+		// into element durations, which must stay integral (wasm i64 boundary).
+		this.splitTime = Math.round(splitTime);
 		this.retainSide = retainSide;
 	}
 

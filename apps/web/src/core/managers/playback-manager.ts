@@ -190,9 +190,13 @@ export class PlaybackManager {
 			(performance.now() - this.playbackStartWallTime) / 1000;
 		const rawTime =
 			this.playbackStartTime + Math.round(elapsedSeconds * TICKS_PER_SECOND);
-		const newTime = fps
-			? (roundToFrame({ time: rawTime, rate: fps }) ?? rawTime)
-			: rawTime;
+		// roundToFrame quantizes to frame boundaries, which are fractional ticks
+		// for rates that don't divide TICKS_PER_SECOND (e.g. detected 28.2 fps).
+		// currentTime must stay integral — edits persist it into element times
+		// and the wasm timecode boundary deserializes them as i64.
+		const newTime = Math.round(
+			fps ? (roundToFrame({ time: rawTime, rate: fps }) ?? rawTime) : rawTime,
+		);
 		const maxTime = this.editor.timeline.getTotalDuration();
 
 		if (newTime >= maxTime) {
