@@ -61,10 +61,14 @@ const deriveRules: ElementUpdateRule[] = [
 				0,
 				sourceDuration - element.trimStart - element.trimEnd,
 			);
-			const nextDuration = getTimelineDurationForSourceSpan({
-				sourceSpan: visibleSourceSpan,
-				retime: nextRetime,
-			});
+			// Round: span / rate is fractional for most rates, but durations are
+			// persisted ticks and the wasm timecode boundary requires i64.
+			const nextDuration = Math.round(
+				getTimelineDurationForSourceSpan({
+					sourceSpan: visibleSourceSpan,
+					retime: nextRetime,
+				}),
+			);
 
 			return {
 				element: {

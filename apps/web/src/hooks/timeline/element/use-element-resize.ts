@@ -100,15 +100,21 @@ export function useTimelineElementResize({
 				return clipDelta;
 			}
 
+			// Rounded: clipTime × rate is fractional for most retime rates, but
+			// trims are persisted ticks (wasm i64 boundary).
 			return clipDelta >= 0
-				? getSourceSpanAtClipTime({
-						clipTime: clipDelta,
-						retime: element.retime,
-					})
-				: -getSourceSpanAtClipTime({
-						clipTime: Math.abs(clipDelta),
-						retime: element.retime,
-					});
+				? Math.round(
+						getSourceSpanAtClipTime({
+							clipTime: clipDelta,
+							retime: element.retime,
+						}),
+					)
+				: -Math.round(
+						getSourceSpanAtClipTime({
+							clipTime: Math.abs(clipDelta),
+							retime: element.retime,
+						}),
+					);
 		},
 		[element],
 	);
@@ -133,10 +139,12 @@ export function useTimelineElementResize({
 				return sourceSpan;
 			}
 
-			return getTimelineDurationForSourceSpan({
-				sourceSpan,
-				retime: element.retime,
-			});
+			return Math.round(
+				getTimelineDurationForSourceSpan({
+					sourceSpan,
+					retime: element.retime,
+				}),
+			);
 		},
 		[element],
 	);

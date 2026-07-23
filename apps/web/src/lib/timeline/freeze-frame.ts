@@ -100,14 +100,20 @@ function splitSourceAtFreezeTime({
 	}
 
 	const relativeTime = freezeTime - source.startTime;
-	const leftSourceSpan = getSourceSpanAtClipTime({
-		clipTime: relativeTime,
-		retime: source.retime,
-	});
-	const totalSourceSpan = getSourceSpanAtClipTime({
-		clipTime: source.duration,
-		retime: source.retime,
-	});
+	// Rounded: clipTime × rate is fractional for most retime rates, but trims
+	// are persisted ticks (wasm i64 boundary).
+	const leftSourceSpan = Math.round(
+		getSourceSpanAtClipTime({
+			clipTime: relativeTime,
+			retime: source.retime,
+		}),
+	);
+	const totalSourceSpan = Math.round(
+		getSourceSpanAtClipTime({
+			clipTime: source.duration,
+			retime: source.retime,
+		}),
+	);
 	const rightSourceSpan = totalSourceSpan - leftSourceSpan;
 	const { leftAnimations, rightAnimations } = splitAnimationsAtTime({
 		animations: source.animations,

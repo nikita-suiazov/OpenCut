@@ -75,14 +75,20 @@ export class SplitElementsCommand extends Command {
 				const retimeRef = isRetimableElement(element)
 					? element.retime
 					: undefined;
-				const leftSourceSpan = getSourceSpanAtClipTime({
-					clipTime: leftVisibleDuration,
-					retime: retimeRef,
-				});
-				const totalSourceSpan = getSourceSpanAtClipTime({
-					clipTime: element.duration,
-					retime: retimeRef,
-				});
+				// Rounded: clipTime × rate is fractional for most retime rates, but
+				// trims are persisted ticks (wasm i64 boundary).
+				const leftSourceSpan = Math.round(
+					getSourceSpanAtClipTime({
+						clipTime: leftVisibleDuration,
+						retime: retimeRef,
+					}),
+				);
+				const totalSourceSpan = Math.round(
+					getSourceSpanAtClipTime({
+						clipTime: element.duration,
+						retime: retimeRef,
+					}),
+				);
 				const rightSourceSpan = totalSourceSpan - leftSourceSpan;
 				const { leftAnimations, rightAnimations } = splitAnimationsAtTime({
 					animations: element.animations,
