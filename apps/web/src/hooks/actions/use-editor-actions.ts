@@ -8,6 +8,15 @@ import { useElementSelection } from "../timeline/element/use-element-selection";
 import { TICKS_PER_SECOND } from "@/lib/wasm";
 import { useKeyframeSelection } from "../timeline/element/use-keyframe-selection";
 import { getElementsAtTime, hasMediaId } from "@/lib/timeline";
+import type { VideoElement } from "@/lib/timeline";
+import { FREEZE_FRAME_DURATION_SECONDS } from "@/lib/timeline/freeze-frame";
+import { getSourceSpanAtClipTime } from "@/lib/retime";
+import { extractVideoFrame } from "@/lib/media/mediabunny";
+import { processMediaAssets } from "@/lib/media/processing";
+import { AddMediaAssetCommand } from "@/lib/commands/media";
+import { FreezeFrameCommand } from "@/lib/commands/timeline";
+import { BatchCommand } from "@/lib/commands";
+import { toast } from "sonner";
 import { cancelInteraction } from "@/lib/cancel-interaction";
 import { invokeAction } from "@/lib/actions";
 import { canToggleSourceAudio } from "@/lib/timeline/audio-separation";
@@ -250,6 +259,75 @@ export function useEditorActions() {
 				splitTime: currentTime,
 				retainSide: "left",
 			});
+		},
+		undefined,
+	);
+
+	useActionHandler(
+		"freeze-frame",
+		() => {
+			const currentTime = editor.playback.getCurrentTime();
+			const tracks = editor.scenes.getActiveScene().tracks;
+			const candidates =
+				selectedElements.length > 0
+					? selectedElements
+					: getElementsAtTime({ tracks, time: currentTime });
+			const target = editor.timeline
+				.getElementsWithTracks({ elements: candidates })
+				.find(({ element }) => element.type === "video");
+			if (!target) return;
+
+			const element = target.element as VideoElement;
+			const clipTime = currentTime - element.startTime;
+			if (clipTime < 0 || clipTime > element.duration) return;
+
+			const asset = editor.media
+				.getAssets()
+				.find((mediaAsset) => mediaAsset.id === element.mediaId);
+			const activeProject = editor.project.getActive();
+			if (!asset || !activeProject) return;
+
+			const sourceTicks =
+				element.trimStart +
+				getSourceSpanAtClipTime({ clipTime, retime: element.retime });
+			const sourceSeconds = Math.min(
+				sourceTicks / TICKS_PER_SECOND,
+				asset.duration != null
+					? Math.max(0, asset.duration - 0.001)
+					: Number.POSITIVE_INFINITY,
+			);
+
+			void (async () => {
+				try {
+					const frameFile = await extractVideoFrame({
+						videoFile: asset.file,
+						time: sourceSeconds,
+						fileName: `${element.name} freeze.png`,
+					});
+					const [processedAsset] = await processMediaAssets({
+						files: [frameFile],
+					});
+					if (!processedAsset) return;
+
+					const addMediaCommand = new AddMediaAssetCommand(
+						activeProject.metadata.id,
+						processedAsset,
+					);
+					const freezeCommand = new FreezeFrameCommand({
+						trackId: target.track.id,
+						elementId: element.id,
+						freezeTime: currentTime,
+						stillDuration: FREEZE_FRAME_DURATION_SECONDS * TICKS_PER_SECOND,
+						stillMediaId: addMediaCommand.getAssetId(),
+					});
+					editor.command.execute({
+						command: new BatchCommand([addMediaCommand, freezeCommand]),
+					});
+				} catch (error) {
+					console.error("Failed to freeze frame:", error);
+					toast.error("Failed to freeze frame");
+				}
+			})();
 		},
 		undefined,
 	);
