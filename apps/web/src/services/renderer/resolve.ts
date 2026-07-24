@@ -192,12 +192,15 @@ async function resolveVideoNode({
 		return null;
 	}
 
-	const sourceTimeTicks =
+	// Rounded: clipTime x rate is fractional for most retime rates, and the
+	// wasm mediaTimeToSeconds boundary requires i64 ticks.
+	const sourceTimeTicks = Math.round(
 		node.params.trimStart +
-		getSourceTimeAtClipTime({
-			clipTime,
-			retime: node.params.retime,
-		});
+			getSourceTimeAtClipTime({
+				clipTime,
+				retime: node.params.retime,
+			}),
+	);
 	const frame = await videoCache.getFrameAt({
 		mediaId: node.params.mediaId,
 		file: node.params.file,
@@ -406,12 +409,15 @@ async function resolveBackdropSource({
 	clipTime: number;
 }): Promise<BackdropSource | null> {
 	if (node.params.mediaType === "video") {
-		const sourceTimeTicks =
+		// Rounded: clipTime x rate is fractional for most retime rates, and the
+		// wasm mediaTimeToSeconds boundary requires i64 ticks.
+		const sourceTimeTicks = Math.round(
 			node.params.trimStart +
-			getSourceTimeAtClipTime({
-				clipTime,
-				retime: node.params.retime,
-			});
+				getSourceTimeAtClipTime({
+					clipTime,
+					retime: node.params.retime,
+				}),
+		);
 		const frame = await videoCache.getFrameAt({
 			mediaId: node.params.mediaId,
 			file: node.params.file,
