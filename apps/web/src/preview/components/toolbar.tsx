@@ -8,10 +8,12 @@ import { EditableTimecode } from "@/components/editable-timecode";
 import { Button } from "@/components/ui/button";
 import {
 	FullScreenIcon,
+	GridTableIcon,
 	PauseIcon,
 	PlayIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { getGuideById } from "@/guides";
 import { Separator } from "@/components/ui/separator";
 import {
 	Select,
@@ -31,6 +33,9 @@ export function PreviewToolbar({
 }: {
 	onToggleFullscreen: () => void;
 }) {
+	const activeGuide = usePreviewStore((state) => state.activeGuide);
+	const activeGuideDefinition = getGuideById(activeGuide);
+
 	return (
 		<div className="grid grid-cols-[1fr_auto_1fr] items-center pb-3 pt-5 px-5">
 			<TimecodeDisplay />
@@ -38,8 +43,7 @@ export function PreviewToolbar({
 			<div className="justify-self-end flex items-center gap-2.5">
 				<ZoomSelect />
 				<Separator orientation="vertical" className="h-4" />
-				{/* v0.4.0 */}
-				{/* <GridPopover>
+				<GridPopover>
 					<Button
 						variant={activeGuideDefinition ? "secondary" : "text"}
 						size="icon"
@@ -50,7 +54,7 @@ export function PreviewToolbar({
 							<HugeiconsIcon icon={GridTableIcon} />
 						)}
 					</Button>
-				</GridPopover> */}
+				</GridPopover>
 				<Button variant="text" onClick={onToggleFullscreen}>
 					<HugeiconsIcon icon={FullScreenIcon} />
 				</Button>
