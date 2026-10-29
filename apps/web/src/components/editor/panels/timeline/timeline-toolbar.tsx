@@ -192,6 +192,12 @@ function ToolbarLeftSection() {
 				/>
 
 				<ToolbarButton
+					icon={<HugeiconsIcon icon={SearchAddIcon} />}
+					tooltip="Add zoom (Z)"
+					onClick={({ event }) => handleAction({ action: "add-zoom", event })}
+				/>
+
+				<ToolbarButton
 					icon={<HugeiconsIcon icon={Delete02Icon} />}
 					tooltip="Delete element"
 					onClick={({ event }) =>

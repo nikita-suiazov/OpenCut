@@ -1,5 +1,9 @@
 # Agents.md
 
+## Git
+
+- Commit messages are ALWAYS written in English, no exceptions — regardless of the language the task was discussed in. Same for branch names and PR titles/descriptions.
+
 ## Architecture
 
 An ongoing migration is moving all business logic into `rust/`. Each app under `apps/` is a UI shell — it owns rendering, interaction, and platform-specific concerns, but never owns logic. The UI framework for any given app is a replaceable detail.

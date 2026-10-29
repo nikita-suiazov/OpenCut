@@ -18,10 +18,7 @@ import { Button } from "@/components/ui/button";
 import { uppercase } from "@/utils/string";
 import { clamp, formatNumberForDisplay } from "@/utils/math";
 import { useEditor } from "@/hooks/use-editor";
-import {
-	CORNER_RADIUS_MAX,
-	CORNER_RADIUS_MIN,
-} from "@/lib/text/background";
+import { CORNER_RADIUS_MAX, CORNER_RADIUS_MIN } from "@/lib/text/background";
 import {
 	DEFAULT_TEXT_COLOR,
 	MAX_FONT_SIZE,
@@ -503,6 +500,18 @@ function BackgroundSection({
 		}),
 	});
 
+	const patchBackground = (patch: Partial<typeof bg>) => {
+		editor.timeline.updateElements({
+			updates: [
+				{
+					trackId,
+					elementId: element.id,
+					patch: { background: { ...element.background, ...patch } },
+				},
+			],
+		});
+	};
+
 	const toggleBackgroundEnabled = () => {
 		const enabled = !element.background.enabled;
 		const color =
@@ -760,6 +769,44 @@ function BackgroundSection({
 							})}
 						/>
 					</SectionField>
+					<div className="flex items-start gap-2">
+						<SectionField label="Border" className="w-1/2">
+							<NumberField
+								icon="B"
+								value={String(
+									bg.borderWidth ?? DEFAULTS.text.background.borderWidth,
+								)}
+								min={0}
+								onChange={(event) => {
+									const parsed = parseFloat(event.target.value);
+									if (Number.isNaN(parsed)) return;
+									patchBackground({ borderWidth: Math.max(0, parsed) });
+								}}
+								onScrub={(value) =>
+									patchBackground({ borderWidth: Math.max(0, value) })
+								}
+								onReset={() =>
+									patchBackground({
+										borderWidth: DEFAULTS.text.background.borderWidth,
+									})
+								}
+								isDefault={
+									(bg.borderWidth ?? DEFAULTS.text.background.borderWidth) ===
+									DEFAULTS.text.background.borderWidth
+								}
+							/>
+						</SectionField>
+						<SectionField label="Border color" className="w-1/2">
+							<ColorPicker
+								value={(
+									bg.borderColor ?? DEFAULTS.text.background.borderColor
+								).replace("#", "")}
+								onChange={(color) =>
+									patchBackground({ borderColor: `#${color}` })
+								}
+							/>
+						</SectionField>
+					</div>
 				</SectionFields>
 			</SectionContent>
 		</Section>

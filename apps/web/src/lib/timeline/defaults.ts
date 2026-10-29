@@ -25,6 +25,8 @@ const defaultTextBackground = {
 	paddingY: 42,
 	offsetX: 0,
 	offsetY: 0,
+	borderWidth: 0,
+	borderColor: "#FFFFFF",
 };
 
 const defaultTextElement: Omit<TextElement, "id"> = {

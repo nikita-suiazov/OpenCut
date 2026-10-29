@@ -27,3 +27,10 @@ target/
 # local dev artifacts (chatgpt-pro-tools montage tooling)
 .claude-profile/
 dev-server.log
+backups/
+
+# Playwright MCP screenshots
+.playwright-mcp/
+
+# bundled sound files: some may not be published (see their CREDITS.txt), so they stay on this machine
+apps/web/public/sounds/

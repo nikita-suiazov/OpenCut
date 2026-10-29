@@ -1,6 +1,8 @@
 import Image from "next/image";
 import type { GuideDefinition } from "@/lib/guides/types";
 import { TikTokLayout } from "./tiktok-layout";
+import { InstagramReelsLayout } from "./ig-reels-layout";
+import { YouTubeShortsLayout } from "./yt-shorts-layout";
 
 function PlatformLogo({
 	domain,
@@ -48,16 +50,14 @@ export const tiktokGuide: GuideDefinition = {
 	...platformGuide({ id: "tiktok", label: "TikTok", domain: "tiktok.com" }),
 	renderOverlay: () => <TikTokLayout />,
 };
-export const igReelsGuide = platformGuide({
-	id: "ig-reels",
-	label: "Reels",
-	domain: "instagram.com",
-});
-export const ytShortsGuide = platformGuide({
-	id: "yt-shorts",
-	label: "Shorts",
-	domain: "youtube.com",
-});
+export const igReelsGuide: GuideDefinition = {
+	...platformGuide({ id: "ig-reels", label: "Reels", domain: "instagram.com" }),
+	renderOverlay: () => <InstagramReelsLayout />,
+};
+export const ytShortsGuide: GuideDefinition = {
+	...platformGuide({ id: "yt-shorts", label: "Shorts", domain: "youtube.com" }),
+	renderOverlay: () => <YouTubeShortsLayout />,
+};
 export const spotlightGuide = platformGuide({
 	id: "spotlight",
 	label: "Spotlight",

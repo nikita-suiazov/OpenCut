@@ -5,9 +5,11 @@ import { usePreviewViewport } from "@/components/editor/panels/preview/preview-v
 import type { Transform } from "@/lib/rendering";
 import type { ElementRef, TextElement } from "@/lib/timeline";
 import {
+	elementFollowsCamera,
 	getVisibleElementsWithBounds,
 	type ElementWithBounds,
 } from "@/lib/preview/element-bounds";
+import { usePreviewCamera } from "@/hooks/use-preview-camera";
 import {
 	getHitElements,
 	hitTest,
@@ -50,6 +52,8 @@ interface DragState extends CapturedPointerState {
 		trackId: string;
 		elementId: string;
 		initialTransform: Transform;
+		/** Frame-space pointer travel is this much element-space travel. */
+		cameraScale: number;
 	}>;
 }
 
@@ -111,6 +115,9 @@ export function usePreviewInteraction({
 	} | null>(null);
 	const dragStateRef = useRef<DragState | null>(null);
 	const pendingGestureRef = useRef<PendingGestureState | null>(null);
+	const camera = usePreviewCamera();
+	const cameraRef = useRef(camera);
+	cameraRef.current = camera;
 	const wasPlayingRef = useRef(editor.playback.getIsPlaying());
 	const editingTextRef = useRef(editingText);
 	editingTextRef.current = editingText;
@@ -187,6 +194,7 @@ export function usePreviewInteraction({
 				currentTime,
 				canvasSize,
 				mediaAssets,
+				camera: cameraRef.current,
 			});
 
 			const hit = hitTest({
@@ -236,6 +244,7 @@ export function usePreviewInteraction({
 				currentTime,
 				canvasSize,
 				mediaAssets,
+				camera: cameraRef.current,
 			});
 
 			const hits = getHitElements({
@@ -290,7 +299,8 @@ export function usePreviewInteraction({
 					return;
 				}
 
-				const dragTarget = pendingGesture.selectedHit ?? pendingGesture.topmostHit;
+				const dragTarget =
+					pendingGesture.selectedHit ?? pendingGesture.topmostHit;
 				if (!dragTarget) {
 					pendingGestureRef.current = null;
 					onSnapLinesChange?.([]);
@@ -316,16 +326,22 @@ export function usePreviewInteraction({
 					return;
 				}
 
-			if (pendingGesture.selectedHit === null) {
-				editor.selection.setSelectedElements({
-					elements: [
-						{
-							trackId: dragTarget.trackId,
-							elementId: dragTarget.elementId,
-						},
-					],
-				});
-			}
+				if (pendingGesture.selectedHit === null) {
+					editor.selection.setSelectedElements({
+						elements: [
+							{
+								trackId: dragTarget.trackId,
+								elementId: dragTarget.elementId,
+							},
+						],
+					});
+				}
+
+				const dragTargetCameraScale =
+					cameraRef.current &&
+					elementFollowsCamera({ element: dragTarget.element })
+						? cameraRef.current.scale
+						: 1;
 
 				dragState = {
 					startX: pendingGesture.startX,
@@ -333,14 +349,19 @@ export function usePreviewInteraction({
 					pointerId: pendingGesture.pointerId,
 					captureTarget: pendingGesture.captureTarget,
 					bounds: {
-						width: dragTarget.bounds.width,
-						height: dragTarget.bounds.height,
+						// Snapping happens in element space, against the canvas edges.
+						width: dragTarget.bounds.width / dragTargetCameraScale,
+						height: dragTarget.bounds.height / dragTargetCameraScale,
 						rotation: dragTarget.bounds.rotation,
 					},
 					elements: draggableElements.map(({ track, element }) => ({
 						trackId: track.id,
 						elementId: element.id,
 						initialTransform: (element as { transform: Transform }).transform,
+						cameraScale:
+							cameraRef.current && elementFollowsCamera({ element })
+								? cameraRef.current.scale
+								: 1,
 					})),
 				};
 				dragStateRef.current = dragState;
@@ -348,9 +369,13 @@ export function usePreviewInteraction({
 				setIsDragging(true);
 			}
 
-			const deltaX = currentPos.x - dragState.startX;
-			const deltaY = currentPos.y - dragState.startY;
+			// Pointer travel is frame-space; element positions are not. Under a zoom
+			// camera the element moves cameraScale× less than the pointer.
 			const firstElement = dragState.elements[0];
+			const deltaX =
+				(currentPos.x - dragState.startX) / firstElement.cameraScale;
+			const deltaY =
+				(currentPos.y - dragState.startY) / firstElement.cameraScale;
 			const proposedPosition = {
 				x: firstElement.initialTransform.position.x + deltaX,
 				y: firstElement.initialTransform.position.y + deltaY,
@@ -373,7 +398,22 @@ export function usePreviewInteraction({
 						activeLines: [] as SnapLine[],
 					};
 
-			onSnapLinesChange?.(activeLines);
+			// Guides are drawn straight onto the frame, so they follow the camera
+			// unless the dragged element is pinned to the screen.
+			const cameraForGuides =
+				firstElement.cameraScale === 1 ? null : cameraRef.current;
+			onSnapLinesChange?.(
+				cameraForGuides
+					? activeLines.map((line) => ({
+							...line,
+							position:
+								line.position * cameraForGuides.scale +
+								(line.type === "vertical"
+									? cameraForGuides.translateX
+									: cameraForGuides.translateY),
+						}))
+					: activeLines,
+			);
 
 			const deltaSnappedX =
 				snappedPosition.x - firstElement.initialTransform.position.x;
@@ -381,24 +421,35 @@ export function usePreviewInteraction({
 				snappedPosition.y - firstElement.initialTransform.position.y;
 
 			const updates = dragState.elements.map(
-				({ trackId, elementId, initialTransform }) => ({
-					trackId,
-					elementId,
-					updates: {
-						transform: {
-							...initialTransform,
-							position: {
-								x: initialTransform.position.x + deltaSnappedX,
-								y: initialTransform.position.y + deltaSnappedY,
+				({ trackId, elementId, initialTransform, cameraScale }) => {
+					// Snapped travel came out in the drag target's space; a co-dragged
+					// element on the other side of the camera needs it rescaled.
+					const ratio = firstElement.cameraScale / cameraScale;
+					return {
+						trackId,
+						elementId,
+						updates: {
+							transform: {
+								...initialTransform,
+								position: {
+									x: initialTransform.position.x + deltaSnappedX * ratio,
+									y: initialTransform.position.y + deltaSnappedY * ratio,
+								},
 							},
 						},
-					},
-				}),
+					};
+				},
 			);
 
 			editor.timeline.previewElements({ updates });
 		},
-		[editor, isShiftHeldRef, onSnapLinesChange, releaseCapturedPointer, viewport],
+		[
+			editor,
+			isShiftHeldRef,
+			onSnapLinesChange,
+			releaseCapturedPointer,
+			viewport,
+		],
 	);
 
 	const handlePointerUp = useCallback(

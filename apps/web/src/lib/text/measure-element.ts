@@ -9,6 +9,7 @@ import {
 	getTextVisualRect,
 	type TextBlockMeasurement,
 } from "./layout";
+import { parseTextRuns, type TextRun } from "./runs";
 
 export interface ResolvedTextBackground extends TextBackground {
 	paddingX: number;
@@ -25,6 +26,8 @@ export interface MeasuredTextElement {
 	lineHeightPx: number;
 	lines: string[];
 	lineMetrics: TextMetrics[];
+	lineRuns: TextRun[][];
+	lineRunWidths: number[][];
 	block: TextBlockMeasurement;
 	fontSizeRatio: number;
 	resolvedBackground: ResolvedTextBackground;
@@ -85,13 +88,19 @@ export function measureTextElement({
 	const lineHeightPx =
 		scaledFontSize * (element.lineHeight ?? DEFAULTS.text.lineHeight);
 	const fontSizeRatio = element.fontSize / DEFAULTS.text.element.fontSize;
-	const lines = element.content.split("\n");
+	// Colour markup is stripped for layout: lines/metrics describe the text as
+	// drawn, lineRuns carries the colours (and widths) for the draw pass.
+	const lineRuns = element.content.split("\n").map(parseTextRuns);
+	const lines = lineRuns.map((runs) => runs.map((run) => run.text).join(""));
 
 	ctx.save();
 	ctx.font = fontString;
 	ctx.textBaseline = "middle";
 	setCanvasLetterSpacing({ ctx, letterSpacingPx: letterSpacing });
 	const lineMetrics = lines.map((line) => ctx.measureText(line));
+	const lineRunWidths = lineRuns.map((runs) =>
+		runs.map((run) => ctx.measureText(run.text).width),
+	);
 	ctx.restore();
 
 	const block = measureTextBlock({
@@ -148,6 +157,8 @@ export function measureTextElement({
 		lineHeightPx,
 		lines,
 		lineMetrics,
+		lineRuns,
+		lineRunWidths,
 		block,
 		fontSizeRatio,
 		resolvedBackground,

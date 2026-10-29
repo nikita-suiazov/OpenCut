@@ -2,6 +2,7 @@ import { webEnv } from "@/lib/env/web";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { searchLocalSounds } from "@/lib/sounds/local-library";
 
 const searchParamsSchema = z.object({
 	q: z.string().max(500, "Query too long").optional(),
@@ -215,15 +216,39 @@ export async function GET(request: NextRequest) {
 			applyEffectsFilters({ params, min_rating, commercial_only });
 		}
 
-		const response = await fetch(`${baseUrl}?${params.toString()}`);
+		// Bundled sounds lead the first page and are the whole answer whenever
+		// Freesound is unreachable or unconfigured — the panel never goes empty.
+		const localResults = page === 1 ? searchLocalSounds({ query }) : [];
+		const localOnly = (next: string | null = null) =>
+			NextResponse.json({
+				count: localResults.length,
+				next,
+				previous: null,
+				results: localResults,
+				query: query || "",
+				type: type || "effects",
+				page,
+				pageSize,
+				sort,
+				minRating: min_rating,
+			});
 
-		if (!response.ok) {
-			const errorText = await response.text();
-			console.error("Freesound API error:", response.status, errorText);
-			return NextResponse.json(
-				{ error: "Failed to search sounds" },
-				{ status: response.status },
-			);
+		const response = await fetch(`${baseUrl}?${params.toString()}`).catch(
+			(error: unknown) => {
+				console.error("Freesound request failed:", error);
+				return null;
+			},
+		);
+
+		if (!response?.ok) {
+			if (response) {
+				console.error(
+					"Freesound API error:",
+					response.status,
+					await response.text(),
+				);
+			}
+			return localOnly();
 		}
 
 		const rawData = await response.json();
@@ -234,10 +259,7 @@ export async function GET(request: NextRequest) {
 				"Invalid Freesound API response:",
 				freesoundValidation.error,
 			);
-			return NextResponse.json(
-				{ error: "Invalid response from Freesound API" },
-				{ status: 502 },
-			);
+			return localOnly();
 		}
 
 		const data = freesoundValidation.data;
@@ -245,10 +267,10 @@ export async function GET(request: NextRequest) {
 		const transformedResults = data.results.map(transformFreesoundResult);
 
 		const responseData = {
-			count: data.count,
+			count: data.count + localResults.length,
 			next: data.next,
 			previous: data.previous,
-			results: transformedResults,
+			results: [...localResults, ...transformedResults],
 			query: query || "",
 			type: type || "effects",
 			page,

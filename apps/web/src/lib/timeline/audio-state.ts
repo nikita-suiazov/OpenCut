@@ -37,10 +37,13 @@ import { TICKS_PER_SECOND } from "@/lib/wasm";
 export function resolveEffectiveAudioGain({
 	element,
 	trackMuted = false,
+	trackVolumeDb = 0,
 	localTime,
 }: {
 	element: AudioCapableElement;
 	trackMuted?: boolean;
+	/** Track fader, added to the element's own dB before conversion. */
+	trackVolumeDb?: number;
 	localTime: number;
 }): number {
 	if (trackMuted || element.muted === true) {
@@ -54,18 +57,20 @@ export function resolveEffectiveAudioGain({
 		localTime: Math.round(localTime * TICKS_PER_SECOND),
 	});
 
-	return dBToLinear(resolvedDb);
+	return dBToLinear(resolvedDb + trackVolumeDb);
 }
 
 export function buildAudioGainAutomation({
 	element,
 	trackMuted = false,
+	trackVolumeDb = 0,
 	fromLocalTime,
 	toLocalTime,
 	stepSeconds = DEFAULT_STEP_SECONDS,
 }: {
 	element: AudioCapableElement;
 	trackMuted?: boolean;
+	trackVolumeDb?: number;
 	fromLocalTime: number;
 	toLocalTime: number;
 	stepSeconds?: number;
@@ -84,6 +89,7 @@ export function buildAudioGainAutomation({
 			gain: resolveEffectiveAudioGain({
 				element,
 				trackMuted,
+				trackVolumeDb,
 				localTime,
 			}),
 		});
@@ -94,6 +100,7 @@ export function buildAudioGainAutomation({
 		gain: resolveEffectiveAudioGain({
 			element,
 			trackMuted,
+			trackVolumeDb,
 			localTime: endTime,
 		}),
 	});

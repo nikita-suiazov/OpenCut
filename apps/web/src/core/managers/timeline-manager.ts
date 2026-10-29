@@ -8,9 +8,7 @@ import type {
 	RetimeConfig,
 } from "@/lib/timeline";
 import { calculateTotalDuration } from "@/lib/timeline";
-import {
-	findTrackInSceneTracks,
-} from "@/lib/timeline/track-element-update";
+import { findTrackInSceneTracks } from "@/lib/timeline/track-element-update";
 import {
 	canElementBeHidden,
 	canElementHaveAudio,
@@ -32,6 +30,7 @@ import { BatchCommand } from "@/lib/commands";
 import {
 	AddTrackCommand,
 	RemoveTrackCommand,
+	SetTrackVolumeCommand,
 	ToggleTrackMuteCommand,
 	ToggleTrackVisibilityCommand,
 	InsertElementCommand,
@@ -174,6 +173,17 @@ export class TimelineManager {
 
 	toggleTrackMute({ trackId }: { trackId: string }): void {
 		const command = new ToggleTrackMuteCommand(trackId);
+		this.editor.command.execute({ command });
+	}
+
+	setTrackVolume({
+		trackId,
+		volume,
+	}: {
+		trackId: string;
+		volume: number;
+	}): void {
+		const command = new SetTrackVolumeCommand(trackId, volume);
 		this.editor.command.execute({ command });
 	}
 
@@ -580,14 +590,7 @@ export class TimelineManager {
 		}
 
 		const commands = keyframes.map(
-			({
-				trackId,
-				elementId,
-				propertyPath,
-				componentKey,
-				keyframeId,
-				patch,
-			}) =>
+			({ trackId, elementId, propertyPath, componentKey, keyframeId, patch }) =>
 				new UpdateScalarKeyframeCurveCommand({
 					trackId,
 					elementId,
@@ -711,7 +714,9 @@ export class TimelineManager {
 	private applyPreviewOverlay(tracks: SceneTracks): SceneTracks {
 		if (this.previewOverlay.size === 0) return tracks;
 
-		const applyTrackOverlay = <TTrack extends TimelineTrack>(track: TTrack): TTrack => {
+		const applyTrackOverlay = <TTrack extends TimelineTrack>(
+			track: TTrack,
+		): TTrack => {
 			const hasOverlay = track.elements.some((element) =>
 				this.previewOverlay.has(element.id),
 			);
@@ -803,7 +808,11 @@ export class TimelineManager {
 	}
 
 	getPreviewTracks(): SceneTracks | null {
-		return this.previewTracks ?? this.editor.scenes.getActiveSceneOrNull()?.tracks ?? null;
+		return (
+			this.previewTracks ??
+			this.editor.scenes.getActiveSceneOrNull()?.tracks ??
+			null
+		);
 	}
 
 	subscribe(listener: () => void): () => void {

@@ -140,6 +140,7 @@ class StorageService {
 			isMain: scene.isMain,
 			tracks: this.stripAudioBuffers({ tracks: scene.tracks }),
 			bookmarks: scene.bookmarks,
+			zooms: scene.zooms,
 			createdAt: scene.createdAt.toISOString(),
 			updatedAt: scene.updatedAt.toISOString(),
 		}));
@@ -180,6 +181,7 @@ class StorageService {
 				isMain: scene.isMain,
 				tracks: scene.tracks,
 				bookmarks: normalizeBookmarks({ raw: scene.bookmarks }),
+				zooms: scene.zooms ?? [],
 				createdAt: new Date(scene.createdAt),
 				updatedAt: new Date(scene.updatedAt),
 			})) ?? [];

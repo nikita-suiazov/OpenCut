@@ -4,6 +4,7 @@ import { storageService } from "@/services/storage/service";
 import { toast } from "sonner";
 import { EditorCore } from "@/core";
 import { buildLibraryAudioElement } from "@/lib/timeline/element-utils";
+import { TICKS_PER_SECOND } from "@/lib/wasm";
 
 interface SoundsStore {
 	topSoundEffects: SoundEffect[];
@@ -215,7 +216,6 @@ export const useSoundsStore = create<SoundsStore>((set, get) => ({
 		try {
 			const editor = EditorCore.getInstance();
 			const currentTime = editor.playback.getCurrentTime();
-			const tracks = editor.scenes.getActiveScene().tracks;
 
 			const response = await fetch(audioUrl);
 			if (!response.ok)
@@ -225,25 +225,20 @@ export const useSoundsStore = create<SoundsStore>((set, get) => ({
 			const audioContext = new AudioContext();
 			const buffer = await audioContext.decodeAudioData(arrayBuffer);
 
-			const audioTrack = tracks.audio[0];
-			let trackId: string;
-
-			if (audioTrack) {
-				trackId = audioTrack.id;
-			} else {
-				trackId = editor.timeline.addTrack({ type: "audio" });
-			}
-
 			const element = buildLibraryAudioElement({
 				sourceUrl: audioUrl,
 				name: sound.name,
-				duration: sound.duration,
+				// Sound libraries report seconds; the timeline counts integer ticks.
+				duration: Math.round(sound.duration * TICKS_PER_SECOND),
 				startTime: currentTime,
 				buffer,
 			});
 
+			// Auto placement reuses a free audio track or creates one inside the
+			// same command. Adding the track separately does not work: the
+			// prune-empty-tracks reactor drops it before the element lands.
 			editor.timeline.insertElement({
-				placement: { mode: "explicit", trackId },
+				placement: { mode: "auto", trackType: "audio" },
 				element,
 			});
 			return true;

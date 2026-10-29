@@ -1,6 +1,8 @@
 "use client";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Slider } from "@/components/ui/slider";
+import { VOLUME_DB_MAX, VOLUME_DB_MIN } from "@/lib/timeline/audio-constants";
 import {
 	Delete02Icon,
 	MagicWand05Icon,
@@ -72,6 +74,7 @@ import { useTimelineSeek } from "@/hooks/timeline/use-timeline-seek";
 import { useTimelineDragDrop } from "@/hooks/timeline/use-timeline-drag-drop";
 import { TimelineRuler } from "./timeline-ruler";
 import { TimelineBookmarksRow } from "./bookmarks";
+import { TimelineZoomsRow } from "./zoom-lane";
 import { useBookmarkDrag } from "@/hooks/timeline/use-bookmark-drag";
 import { useEdgeAutoScroll } from "@/hooks/timeline/use-edge-auto-scroll";
 import { useInitialScrollBottom } from "@/hooks/timeline/use-initial-scroll-bottom";
@@ -119,7 +122,9 @@ export function Timeline() {
 	} = useElementSelection();
 	const editor = useEditor();
 	const timeline = editor.timeline;
-	const scene = useEditor((currentEditor) => currentEditor.scenes.getActiveSceneOrNull());
+	const scene = useEditor((currentEditor) =>
+		currentEditor.scenes.getActiveSceneOrNull(),
+	);
 	const tracks = useMemo<TimelineTrack[]>(
 		() =>
 			scene
@@ -366,7 +371,10 @@ export function Timeline() {
 
 	const containerWidth =
 		tracksContainerRef.current?.clientWidth || FALLBACK_CONTAINER_WIDTH;
-	const contentWidth = timelineTimeToPixels({ time: timelineDuration, zoomLevel });
+	const contentWidth = timelineTimeToPixels({
+		time: timelineDuration,
+		zoomLevel,
+	});
 	const paddingPx = getTimelinePaddingPx({
 		containerWidth,
 		zoomLevel,
@@ -488,6 +496,14 @@ export function Timeline() {
 								handleRulerTrackingMouseDown={handleRulerMouseDown}
 								handleRulerMouseDown={handlePlayheadRulerMouseDown}
 							/>
+							<TimelineZoomsRow
+								zoomLevel={zoomLevel}
+								dynamicTimelineWidth={dynamicTimelineWidth}
+								handleWheel={handleWheel}
+								handleTimelineContentClick={handleRulerClick}
+								handleRulerTrackingMouseDown={handleRulerMouseDown}
+								handleRulerMouseDown={handlePlayheadRulerMouseDown}
+							/>
 						</div>
 					</div>
 
@@ -513,7 +529,10 @@ export function Timeline() {
 											TRACKS_CONTAINER_HEIGHT.min,
 											Math.min(
 												TRACKS_CONTAINER_HEIGHT.max,
-												getTotalTracksHeight({ tracks, getExtraHeight: getTrackExpansionHeight }),
+												getTotalTracksHeight({
+													tracks,
+													getExtraHeight: getTrackExpansionHeight,
+												}),
 											),
 										) + TIMELINE_CONTENT_TOP_PADDING_PX
 									}px`,
@@ -533,8 +552,8 @@ export function Timeline() {
 								}}
 							>
 								{tracks.length > 0 && (
-		<TimelineTrackRows
-					mainTrackId={mainTrackId}
+									<TimelineTrackRows
+										mainTrackId={mainTrackId}
 										zoomLevel={zoomLevel}
 										dragState={dragState}
 										tracksScrollRef={tracksScrollRef}
@@ -663,18 +682,32 @@ function TrackLabelsPanel({
 											style={{ height: `${baseHeight}px` }}
 										>
 											{canTrackHaveAudio(track) && (
-												<TrackToggleIcon
-													isOff={track.muted}
-													icons={{
-														on: VolumeHighIcon,
-														off: VolumeOffIcon,
-													}}
-													onClick={() =>
-														editor.timeline.toggleTrackMute({
-															trackId: track.id,
-														})
-													}
-												/>
+												<>
+													<TrackVolumeSlider
+														volumeDb={
+															"volume" in track ? (track.volume ?? 0) : 0
+														}
+														isMuted={track.muted}
+														onChange={(volume) =>
+															editor.timeline.setTrackVolume({
+																trackId: track.id,
+																volume,
+															})
+														}
+													/>
+													<TrackToggleIcon
+														isOff={track.muted}
+														icons={{
+															on: VolumeHighIcon,
+															off: VolumeOffIcon,
+														}}
+														onClick={() =>
+															editor.timeline.toggleTrackMute({
+																trackId: track.id,
+															})
+														}
+													/>
+												</>
 											)}
 											{canTrackBeHidden(track) && (
 												<TrackToggleIcon
@@ -798,8 +831,7 @@ function TimelineTrackRows({
 						<div
 							className={cn(
 								"absolute right-0 left-0 transition-colors",
-								tracksWithSelection.has(track.id) &&
-									SELECTED_TRACK_ROW_CLASS,
+								tracksWithSelection.has(track.id) && SELECTED_TRACK_ROW_CLASS,
 							)}
 							style={{
 								top: `${TIMELINE_CONTENT_TOP_PADDING_PX + getCumulativeHeightBefore({ tracks, trackIndex: index, getExtraHeight: getTrackExpansionHeight })}px`,
@@ -895,6 +927,30 @@ function TrackIcon({ track }: { track: TimelineTrack }) {
 	return <>{TRACK_ICONS[track.type]}</>;
 }
 
+/** Track fader in dB, -40…+6. Double click resets it to unity. */
+function TrackVolumeSlider({
+	volumeDb,
+	isMuted,
+	onChange,
+}: {
+	volumeDb: number;
+	isMuted: boolean;
+	onChange: (volume: number) => void;
+}) {
+	return (
+		<Slider
+			className={cn("w-14", isMuted && "opacity-40")}
+			value={[volumeDb]}
+			min={VOLUME_DB_MIN}
+			max={VOLUME_DB_MAX}
+			step={1}
+			title={`${volumeDb > 0 ? "+" : ""}${Math.round(volumeDb)} dB`}
+			onValueChange={([value]) => onChange(value)}
+			onDoubleClick={() => onChange(0)}
+		/>
+	);
+}
+
 function TrackToggleIcon({
 	isOff,
 	icons,
@@ -932,9 +988,7 @@ function PropertyTree({ rows }: { rows: ExpandedRow[] }) {
 			{rows.map((row, index) => (
 				<div
 					key={row.propertyPath}
-					className={cn(
-						"flex shrink-0 items-center px-3 bg-muted/50",
-					)}
+					className={cn("flex shrink-0 items-center px-3 bg-muted/50")}
 					style={{ height: `${KEYFRAME_LANE_HEIGHT_PX}px` }}
 				>
 					<span className="text-muted-foreground truncate text-xs leading-none">

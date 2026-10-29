@@ -16,12 +16,14 @@ export interface SnapResult {
 	snapDistance: number;
 }
 
-const DEFAULT_SNAP_THRESHOLD_PX = 10;
+// wide enough that clips grab each other by eye; hold Shift to place freely
+const DEFAULT_SNAP_THRESHOLD_PX = 16;
 
 export function findSnapPoints({
 	tracks,
 	playheadTime,
 	excludeElementId,
+	excludeElementIds,
 	bookmarks = [],
 	excludeBookmarkTime,
 	enableElementSnapping = true,
@@ -32,6 +34,7 @@ export function findSnapPoints({
 	tracks: SceneTracks;
 	playheadTime: number;
 	excludeElementId?: string;
+	excludeElementIds?: string[];
 	bookmarks?: Array<Bookmark>;
 	excludeBookmarkTime?: number;
 	enableElementSnapping?: boolean;
@@ -41,10 +44,12 @@ export function findSnapPoints({
 }): SnapPoint[] {
 	const snapPoints: SnapPoint[] = [];
 	const orderedTracks = [...tracks.overlay, tracks.main, ...tracks.audio];
+	const excluded = new Set(excludeElementIds ?? []);
+	if (excludeElementId) excluded.add(excludeElementId);
 
 	for (const track of orderedTracks) {
 		for (const element of track.elements) {
-			if (element.id === excludeElementId) continue;
+			if (excluded.has(element.id)) continue;
 
 			if (enableElementSnapping) {
 				snapPoints.push(
@@ -127,47 +132,4 @@ export function snapToNearestPoint({
 		snapPoint: closestSnapPoint,
 		snapDistance: closestDistance,
 	};
-}
-
-export function snapElementEdge({
-	targetTime,
-	elementDuration,
-	tracks,
-	playheadTime,
-	zoomLevel,
-	excludeElementId,
-	snapToStart = true,
-	bookmarks = [],
-}: {
-	targetTime: number;
-	elementDuration: number;
-	tracks: SceneTracks;
-	playheadTime: number;
-	zoomLevel: number;
-	excludeElementId?: string;
-	snapToStart?: boolean;
-	bookmarks?: Array<Bookmark>;
-}): SnapResult {
-	const snapPoints = findSnapPoints({
-		tracks,
-		playheadTime,
-		excludeElementId,
-		bookmarks,
-	});
-
-	const effectiveTargetTime = snapToStart
-		? targetTime
-		: targetTime + elementDuration;
-
-	const snapResult = snapToNearestPoint({
-		targetTime: effectiveTargetTime,
-		snapPoints,
-		zoomLevel,
-	});
-
-	if (!snapToStart && snapResult.snapPoint) {
-		snapResult.snappedTime = snapResult.snappedTime - elementDuration;
-	}
-
-	return snapResult;
 }

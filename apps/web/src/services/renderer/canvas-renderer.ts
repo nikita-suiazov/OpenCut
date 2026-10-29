@@ -73,6 +73,7 @@ export class CanvasRenderer {
 		const { frame, textures } = await buildFrameDescriptor({
 			node,
 			renderer: this,
+			time,
 		});
 		wasmCompositor.ensureInitialized({
 			width: this.width,

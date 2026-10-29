@@ -182,6 +182,7 @@ export class RendererManager {
 				duration,
 				canvasSize,
 				background: activeProject.settings.background,
+				zooms: this.editor.scenes.getActiveScene().zooms,
 			});
 
 			const exporter = new SceneExporter({

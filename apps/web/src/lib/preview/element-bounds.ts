@@ -1,12 +1,9 @@
-import type { SceneTracks, TimelineElement } from "@/lib/timeline";
+import type { SceneTracks, TimelineElement, ZoomCamera } from "@/lib/timeline";
 import type { MediaAsset } from "@/lib/media/types";
 import { STICKER_INTRINSIC_SIZE_FALLBACK } from "@/lib/stickers/intrinsic-size";
 import { DEFAULT_GRAPHIC_SOURCE_SIZE } from "@/lib/graphics";
 import { measureTextElement } from "@/lib/text/measure-element";
-import {
-	getElementLocalTime,
-	resolveTransformAtTime,
-} from "@/lib/animation";
+import { getElementLocalTime, resolveTransformAtTime } from "@/lib/animation";
 
 export interface ElementBounds {
 	cx: number;
@@ -197,6 +194,36 @@ function getElementBounds({
 	return null;
 }
 
+/**
+ * Text is screen-space: the zoom camera moves the footage under it but leaves
+ * captions where they were placed (see collectTextNode). Everything else is
+ * part of the scene and rides the camera.
+ */
+export function elementFollowsCamera({
+	element,
+}: {
+	element: TimelineElement;
+}): boolean {
+	return element.type !== "text";
+}
+
+/** Element-space bounds → what the frame actually shows. */
+function applyCameraToBounds({
+	bounds,
+	camera,
+}: {
+	bounds: ElementBounds;
+	camera: ZoomCamera;
+}): ElementBounds {
+	return {
+		cx: bounds.cx * camera.scale + camera.translateX,
+		cy: bounds.cy * camera.scale + camera.translateY,
+		width: bounds.width * camera.scale,
+		height: bounds.height * camera.scale,
+		rotation: bounds.rotation,
+	};
+}
+
 export const ROTATION_HANDLE_OFFSET = 24;
 
 export type Corner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
@@ -236,7 +263,8 @@ export function getEdgeHandlePosition({
 	const angleRad = (bounds.rotation * Math.PI) / 180;
 	const cos = Math.cos(angleRad);
 	const sin = Math.sin(angleRad);
-	const localX = edge === "right" ? halfWidth : edge === "left" ? -halfWidth : 0;
+	const localX =
+		edge === "right" ? halfWidth : edge === "left" ? -halfWidth : 0;
 	const localY = edge === "bottom" ? halfHeight : 0;
 	return {
 		x: bounds.cx + (localX * cos - localY * sin),
@@ -249,11 +277,14 @@ export function getVisibleElementsWithBounds({
 	currentTime,
 	canvasSize,
 	mediaAssets,
+	camera = null,
 }: {
 	tracks: SceneTracks;
 	currentTime: number;
 	canvasSize: { width: number; height: number };
 	mediaAssets: MediaAsset[];
+	/** Zoom camera in effect at currentTime; bounds come back in frame space. */
+	camera?: ZoomCamera | null;
 }): ElementWithBounds[] {
 	const mediaMap = new Map(mediaAssets.map((m) => [m.id, m]));
 	const orderedTracks = [
@@ -298,7 +329,10 @@ export function getVisibleElementsWithBounds({
 					trackId: track.id,
 					elementId: element.id,
 					element,
-					bounds,
+					bounds:
+						camera && elementFollowsCamera({ element })
+							? applyCameraToBounds({ bounds, camera })
+							: bounds,
 				});
 			}
 		}

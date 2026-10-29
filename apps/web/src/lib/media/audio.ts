@@ -16,6 +16,7 @@ import {
 import { doesElementHaveEnabledAudio } from "@/lib/timeline/audio-separation";
 import { canElementHaveAudio, hasMediaId } from "@/lib/timeline/element-utils";
 import { canTrackHaveAudio } from "@/lib/timeline";
+import type { TimelineTrack } from "@/lib/timeline";
 import { mediaSupportsAudio } from "@/lib/media/media-utils";
 import { getSourceTimeAtClipTime, renderRetimedBuffer } from "@/lib/retime";
 import { Input, ALL_FORMATS, BlobSource, AudioBufferSink } from "mediabunny";
@@ -27,6 +28,7 @@ const COARSE_SAMPLE_COUNT = 2048;
 
 export interface CollectedAudioElement {
 	timelineElement: AudioCapableElement;
+	trackVolumeDb?: number;
 	buffer: AudioBuffer;
 	startTime: number;
 	duration: number;
@@ -85,6 +87,12 @@ export async function decodeAudioToFloat32({
 export interface AudibleElementCandidate {
 	element: AudioElement | VideoElement;
 	mediaAsset: MediaAsset | null;
+	trackVolumeDb: number;
+}
+
+/** Track fader in dB; silent tracks (text, graphics) never have one. */
+export function getTrackVolumeDb(track: TimelineTrack): number {
+	return canTrackHaveAudio(track) ? (track.volume ?? 0) : 0;
 }
 
 export function collectAudibleCandidates({
@@ -110,7 +118,11 @@ export function collectAudibleCandidates({
 				: null;
 			if (!doesElementHaveEnabledAudio({ element, mediaAsset })) continue;
 
-			candidates.push({ element, mediaAsset });
+			candidates.push({
+				element,
+				mediaAsset,
+				trackVolumeDb: getTrackVolumeDb(track),
+			});
 		}
 	}
 
@@ -144,7 +156,7 @@ export async function collectAudioElements({
 	);
 	const pendingElements: Array<Promise<CollectedAudioElement | null>> = [];
 
-	for (const { element, mediaAsset } of candidates) {
+	for (const { element, mediaAsset, trackVolumeDb } of candidates) {
 		if (element.type === "audio") {
 			pendingElements.push(
 				resolveAudioBufferForElement({
@@ -163,8 +175,10 @@ export async function collectAudioElements({
 						volume: resolveEffectiveAudioGain({
 							element,
 							trackMuted: false,
+							trackVolumeDb,
 							localTime: 0,
 						}),
+						trackVolumeDb,
 						muted: element.muted === true,
 						retime: element.retime,
 					};
@@ -192,8 +206,10 @@ export async function collectAudioElements({
 						volume: resolveEffectiveAudioGain({
 							element,
 							trackMuted: false,
+							trackVolumeDb,
 							localTime: 0,
 						}),
+						trackVolumeDb,
 						muted: element.muted ?? false,
 						retime: element.retime,
 					};
@@ -339,6 +355,7 @@ interface AudioMixSource {
 
 export interface AudioClipSource {
 	timelineElement: AudioCapableElement;
+	trackVolumeDb?: number;
 	id: string;
 	sourceKey: string;
 	file: File;
@@ -410,10 +427,13 @@ async function fetchLibraryAudioClip({
 			id: element.id,
 			sourceKey: element.id,
 			file,
-			startTime: element.startTime,
-			duration: element.duration,
-			trimStart: element.trimStart,
-			trimEnd: element.trimEnd,
+			// AudioClipSource is in seconds, like collectMediaAudioClip. Passing
+			// raw ticks here scheduled every library sound days into the future,
+			// so nothing from the Sounds panel was ever audible in playback.
+			startTime: element.startTime / TICKS_PER_SECOND,
+			duration: element.duration / TICKS_PER_SECOND,
+			trimStart: element.trimStart / TICKS_PER_SECOND,
+			trimEnd: element.trimEnd / TICKS_PER_SECOND,
 			volume,
 			muted,
 			retime: element.retime,
@@ -497,6 +517,7 @@ export async function collectAudioMixSources({
 			if (!doesElementHaveEnabledAudio({ element, mediaAsset })) continue;
 			const volume = resolveEffectiveAudioGain({
 				element,
+				trackVolumeDb: getTrackVolumeDb(track),
 				localTime: 0,
 			});
 
@@ -565,25 +586,31 @@ export async function collectAudioClips({
 			const volume = resolveEffectiveAudioGain({
 				element,
 				trackMuted: isTrackMuted,
+				trackVolumeDb: getTrackVolumeDb(track),
 				localTime: 0,
 			});
+
+			const trackVolumeDb = getTrackVolumeDb(track);
 
 			if (element.type === "audio") {
 				if (element.sourceType === "upload") {
 					const mediaAsset = mediaMap.get(element.mediaId);
 					if (!mediaAsset) continue;
 
-					clips.push(
-						collectMediaAudioClip({
+					clips.push({
+						...collectMediaAudioClip({
 							element,
 							mediaAsset,
 							muted,
 							volume,
 						}),
-					);
+						trackVolumeDb,
+					});
 				} else {
 					pendingLibraryClips.push(
-						fetchLibraryAudioClip({ element, muted, volume }),
+						fetchLibraryAudioClip({ element, muted, volume }).then((clip) =>
+							clip ? { ...clip, trackVolumeDb } : null,
+						),
 					);
 				}
 				continue;
@@ -591,14 +618,15 @@ export async function collectAudioClips({
 
 			if (element.type === "video") {
 				if (mediaAsset && mediaSupportsAudio({ media: mediaAsset })) {
-					clips.push(
-						collectMediaAudioClip({
+					clips.push({
+						...collectMediaAudioClip({
 							element,
 							mediaAsset,
 							muted,
 							volume,
 						}),
-					);
+						trackVolumeDb,
+					});
 				}
 			}
 		}
@@ -778,6 +806,7 @@ function mixAudioChannels({
 			const gain = hasAnimatedVolume({ element: element.timelineElement })
 				? resolveEffectiveAudioGain({
 						element: element.timelineElement,
+						trackVolumeDb: element.trackVolumeDb ?? 0,
 						localTime: clipTime,
 					})
 				: element.volume;

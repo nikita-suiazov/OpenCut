@@ -617,7 +617,9 @@ function ElementInner({
 							)}
 							style={{ height: `${baseTrackHeight}px` }}
 						>
-							<div className="flex flex-1 min-h-0 items-center overflow-hidden">
+							{/* h-full: content like the audio waveform sizes itself off
+							    this box, and items-center alone leaves it zero-height */}
+							<div className="flex h-full flex-1 min-h-0 items-center overflow-hidden">
 								<ElementContent element={element} track={track} />
 							</div>
 						</div>

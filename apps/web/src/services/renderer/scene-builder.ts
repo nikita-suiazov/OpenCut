@@ -1,4 +1,5 @@
 import type { SceneTracks, TimelineTrack } from "@/lib/timeline";
+import type { ZoomSegment } from "@/lib/timeline/zoom-segments";
 import type { MediaAsset } from "@/lib/media/types";
 import { RootNode } from "./nodes/root-node";
 import { VideoNode } from "./nodes/video-node";
@@ -213,6 +214,7 @@ export type BuildSceneParams = {
 	duration: number;
 	background: TBackground;
 	isPreview?: boolean;
+	zooms?: ZoomSegment[];
 };
 
 export function buildScene({
@@ -222,8 +224,9 @@ export function buildScene({
 	duration,
 	background,
 	isPreview,
+	zooms,
 }: BuildSceneParams) {
-	const rootNode = new RootNode({ duration });
+	const rootNode = new RootNode({ duration, zooms });
 	const mediaMap = new Map(mediaAssets.map((m) => [m.id, m]));
 
 	const visibleTracks = [

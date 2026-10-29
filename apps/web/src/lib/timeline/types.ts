@@ -3,6 +3,7 @@ import type { Effect } from "@/lib/effects/types";
 import type { Mask } from "@/lib/masks/types";
 import type { ParamValues } from "@/lib/params";
 import type { BlendMode, Transform } from "@/lib/rendering";
+import type { ZoomSegment } from "@/lib/timeline/zoom-segments";
 
 export type ElementRef = {
 	trackId: string;
@@ -22,6 +23,7 @@ export interface TScene {
 	isMain: boolean;
 	tracks: SceneTracks;
 	bookmarks: Bookmark[];
+	zooms?: ZoomSegment[];
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -31,6 +33,8 @@ export type TrackType = "video" | "text" | "audio" | "graphic" | "effect";
 interface BaseTrack {
 	id: string;
 	name: string;
+	/** Track gain in dB, summed with each element's own volume. */
+	volume?: number;
 }
 
 export interface VideoTrack extends BaseTrack {
@@ -149,6 +153,9 @@ export interface TextBackground {
 	paddingY?: number;
 	offsetX?: number;
 	offsetY?: number;
+	/** Outline drawn just inside the background box. 0 hides it. */
+	borderWidth?: number;
+	borderColor?: string;
 }
 
 export interface TextElement extends BaseTimelineElement {

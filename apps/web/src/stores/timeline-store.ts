@@ -13,6 +13,8 @@ interface TimelineStore {
 	toggleRippleEditing: () => void;
 	expandedElementIds: Set<string>;
 	toggleElementExpanded: (elementId: string) => void;
+	selectedZoomId: string | null;
+	setSelectedZoomId: (zoomId: string | null) => void;
 }
 
 export const useTimelineStore = create<TimelineStore>()(
@@ -30,6 +32,12 @@ export const useTimelineStore = create<TimelineStore>()(
 				set((state) => ({
 					rippleEditingEnabled: !state.rippleEditingEnabled,
 				}));
+			},
+
+			selectedZoomId: null,
+
+			setSelectedZoomId: (zoomId) => {
+				set({ selectedZoomId: zoomId });
 			},
 
 			expandedElementIds: new Set<string>(),

@@ -18,9 +18,16 @@ import {
 	MoveBookmarkCommand,
 	RemoveBookmarkCommand,
 	RenameSceneCommand,
+	SetZoomsCommand,
 	ToggleBookmarkCommand,
 	UpdateBookmarkCommand,
 } from "@/lib/commands/scene";
+import {
+	DEFAULT_ZOOM_LEVEL,
+	getZoomPlacement,
+	type ZoomSegment,
+} from "@/lib/timeline/zoom-segments";
+import { generateUUID } from "@/utils/id";
 
 export class ScenesManager {
 	private active: TScene | null = null;
@@ -150,6 +157,61 @@ export class ScenesManager {
 	}): Promise<void> {
 		const command = new MoveBookmarkCommand(fromTime, toTime);
 		this.editor.command.execute({ command });
+	}
+
+	getZooms(): ZoomSegment[] {
+		return this.active?.zooms ?? [];
+	}
+
+	/** Adds a zoom segment at the playhead. Returns its id, or null if it doesn't fit. */
+	addZoom({ time }: { time: number }): string | null {
+		const zooms = this.getZooms();
+		const placement = getZoomPlacement({
+			zooms,
+			time,
+			timelineDuration: this.editor.timeline.getTotalDuration(),
+		});
+		if (!placement) return null;
+
+		const segment: ZoomSegment = {
+			id: generateUUID(),
+			...placement,
+			level: DEFAULT_ZOOM_LEVEL,
+			focusX: 0.5,
+			focusY: 0.5,
+		};
+		this.editor.command.execute({
+			command: new SetZoomsCommand([...zooms, segment]),
+		});
+		return segment.id;
+	}
+
+	updateZoom({
+		zoomId,
+		updates,
+	}: {
+		zoomId: string;
+		updates: Partial<Omit<ZoomSegment, "id">>;
+	}): void {
+		const zooms = this.getZooms();
+		if (!zooms.some((zoom) => zoom.id === zoomId)) return;
+
+		this.editor.command.execute({
+			command: new SetZoomsCommand(
+				zooms.map((zoom) =>
+					zoom.id === zoomId ? { ...zoom, ...updates } : zoom,
+				),
+			),
+		});
+	}
+
+	removeZoom({ zoomId }: { zoomId: string }): void {
+		const zooms = this.getZooms();
+		if (!zooms.some((zoom) => zoom.id === zoomId)) return;
+
+		this.editor.command.execute({
+			command: new SetZoomsCommand(zooms.filter((zoom) => zoom.id !== zoomId)),
+		});
 	}
 
 	getBookmarkAtTime({ time }: { time: number }) {

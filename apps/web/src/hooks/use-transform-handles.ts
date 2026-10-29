@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePreviewViewport } from "@/components/editor/panels/preview/preview-viewport";
 import type { OnSnapLinesChange } from "@/hooks/use-preview-interaction";
 import { useEditor } from "@/hooks/use-editor";
+import { usePreviewCamera } from "@/hooks/use-preview-camera";
 import { useShiftKey } from "@/hooks/use-shift-key";
 import {
 	getVisibleElementsWithBounds,
@@ -31,11 +32,7 @@ type Corner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 type Edge = "right" | "left" | "bottom";
 type HandleType = Corner | Edge | "rotation";
 
-function getPreferredEdge({
-	edge,
-}: {
-	edge: Edge;
-}): ScaleEdgePreference {
+function getPreferredEdge({ edge }: { edge: Edge }): ScaleEdgePreference {
 	return edge === "right"
 		? { right: true }
 		: edge === "left"
@@ -142,12 +139,14 @@ export function useTransformHandles({
 	const canvasSize = useEditor(
 		(e) => e.project.getActive().settings.canvasSize,
 	);
+	const camera = usePreviewCamera();
 
 	const elementsWithBounds = getVisibleElementsWithBounds({
 		tracks,
 		currentTime,
 		canvasSize,
 		mediaAssets,
+		camera,
 	});
 
 	const selectedWithBounds: ElementWithBounds | null =
@@ -191,7 +190,12 @@ export function useTransformHandles({
 				releaseCapturedPointer();
 			},
 		});
-	}, [activeHandle, clearActiveHandleState, editor.timeline, releaseCapturedPointer]);
+	}, [
+		activeHandle,
+		clearActiveHandleState,
+		editor.timeline,
+		releaseCapturedPointer,
+	]);
 
 	const handleCornerPointerDown = useCallback(
 		({ event, corner }: { event: React.PointerEvent; corner: Corner }) => {
@@ -333,11 +337,10 @@ export function useTransformHandles({
 				edge === "right" || edge === "left"
 					? "transform.scaleX"
 					: "transform.scaleY";
-			const shouldClearScaleAnimation =
-				hasKeyframesForPath({
-					animations: element.animations,
-					propertyPath,
-				});
+			const shouldClearScaleAnimation = hasKeyframesForPath({
+				animations: element.animations,
+				propertyPath,
+			});
 			const animationsWithoutScale = shouldClearScaleAnimation
 				? setChannel({
 						animations: element.animations,
@@ -605,18 +608,16 @@ export function useTransformHandles({
 	);
 
 	const handlePointerUp = useCallback(() => {
-			if (
-				scaleStateRef.current ||
-				rotationStateRef.current ||
-				edgeScaleStateRef.current
-			) {
-				editor.timeline.commitPreview();
-				clearActiveHandleState();
-			}
-			releaseCapturedPointer();
-		},
-		[clearActiveHandleState, editor, releaseCapturedPointer],
-	);
+		if (
+			scaleStateRef.current ||
+			rotationStateRef.current ||
+			edgeScaleStateRef.current
+		) {
+			editor.timeline.commitPreview();
+			clearActiveHandleState();
+		}
+		releaseCapturedPointer();
+	}, [clearActiveHandleState, editor, releaseCapturedPointer]);
 
 	return {
 		selectedWithBounds,

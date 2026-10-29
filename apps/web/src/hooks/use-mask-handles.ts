@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePreviewViewport } from "@/components/editor/panels/preview/preview-viewport";
 import { useEditor } from "@/hooks/use-editor";
+import { usePreviewCamera } from "@/hooks/use-preview-camera";
 import { useShiftKey } from "@/hooks/use-shift-key";
 import { masksRegistry } from "@/lib/masks";
 import {
@@ -53,6 +54,7 @@ export function useMaskHandles({
 	const canvasSize = useEditor(
 		(e) => e.project.getActive().settings.canvasSize,
 	);
+	const camera = usePreviewCamera();
 	const selectedElements = useEditor((e) => e.selection.getSelectedElements());
 
 	const elementsWithBounds = getVisibleElementsWithBounds({
@@ -60,6 +62,7 @@ export function useMaskHandles({
 		currentTime,
 		canvasSize,
 		mediaAssets,
+		camera,
 	});
 
 	const selectedWithMask =
@@ -239,14 +242,12 @@ export function useMaskHandles({
 	);
 
 	const handlePointerUp = useCallback(() => {
-			if (dragStateRef.current) {
-				editor.timeline.commitPreview();
-				clearMaskHandleState();
-			}
-			releaseCapturedPointer();
-		},
-		[clearMaskHandleState, editor, releaseCapturedPointer],
-	);
+		if (dragStateRef.current) {
+			editor.timeline.commitPreview();
+			clearMaskHandleState();
+		}
+		releaseCapturedPointer();
+	}, [clearMaskHandleState, editor, releaseCapturedPointer]);
 
 	return {
 		selectedWithMask,

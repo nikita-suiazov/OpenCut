@@ -33,6 +33,8 @@ export function useEditorActions() {
 	const toggleSnapping = useTimelineStore((s) => s.toggleSnapping);
 	const rippleEditingEnabled = useTimelineStore((s) => s.rippleEditingEnabled);
 	const toggleRippleEditing = useTimelineStore((s) => s.toggleRippleEditing);
+	const selectedZoomId = useTimelineStore((s) => s.selectedZoomId);
+	const setSelectedZoomId = useTimelineStore((s) => s.setSelectedZoomId);
 	const hasTimelineSelectionRef = useRef(false);
 	const clearTimelineSelectionRef = useRef(() => {});
 	const timelineScopeRef = useRef<ScopeEntry | null>(null);
@@ -66,6 +68,13 @@ export function useEditorActions() {
 
 		return activateScope({ entry: timelineScope });
 	}, [hasTimelineSelection]);
+
+	// Zoom segment selection is exclusive with element selection.
+	useEffect(() => {
+		if (selectedElements.length > 0) {
+			setSelectedZoomId(null);
+		}
+	}, [selectedElements, setSelectedZoomId]);
 
 	useActionHandler(
 		"toggle-play",
@@ -335,6 +344,11 @@ export function useEditorActions() {
 	useActionHandler(
 		"delete-selected",
 		() => {
+			if (selectedZoomId) {
+				editor.scenes.removeZoom({ zoomId: selectedZoomId });
+				setSelectedZoomId(null);
+				return;
+			}
 			if (selectedKeyframes.length > 0) {
 				editor.timeline.removeKeyframes({ keyframes: selectedKeyframes });
 				clearKeyframeSelection();
@@ -346,6 +360,24 @@ export function useEditorActions() {
 			editor.timeline.deleteElements({
 				elements: selectedElements,
 			});
+		},
+		undefined,
+	);
+
+	useActionHandler(
+		"add-zoom",
+		() => {
+			const zoomId = editor.scenes.addZoom({
+				time: editor.playback.getCurrentTime(),
+			});
+			if (!zoomId) {
+				toast.error("Can't place a zoom here", {
+					description: "A zoom already exists at this position",
+				});
+				return;
+			}
+			setElementSelection({ elements: [] });
+			setSelectedZoomId(zoomId);
 		},
 		undefined,
 	);
@@ -424,6 +456,7 @@ export function useEditorActions() {
 				setElementSelection({ elements: [] });
 				clearKeyframeSelection();
 			}
+			setSelectedZoomId(null);
 		},
 		undefined,
 	);
