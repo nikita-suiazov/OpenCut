@@ -4,6 +4,7 @@ import { upsertPathKeyframe } from "@/animation";
 import { updateElementInSceneTracks } from "@/timeline";
 import type { SceneTracks } from "@/timeline";
 import { resolveAnimationTarget } from "@/timeline/animation-targets";
+import { syncSeamlessBoundaryKeys } from "@/timeline/boundary-sync";
 import type {
 	AnimationPath,
 	AnimationInterpolation,
@@ -90,7 +91,13 @@ export class UpsertKeyframeCommand extends Command {
 			},
 		});
 
-		editor.timeline.updateTracks(updatedTracks);
+		editor.timeline.updateTracks(
+			syncSeamlessBoundaryKeys({
+				tracks: updatedTracks,
+				trackId: this.trackId,
+				elementId: this.elementId,
+			}),
+		);
 		return undefined;
 	}
 
