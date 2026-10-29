@@ -14,6 +14,7 @@ import type {
 } from "@/actions/keybinding";
 import { isKey } from "@/actions/keybinding";
 import { runMigrations, CURRENT_VERSION } from "./keybindings/migrations";
+import { mergeKeybindingsWithDefaults } from "./keybindings/merge-defaults";
 
 export interface KeybindingConflict {
 	key: ShortcutKey;
@@ -198,7 +199,11 @@ export const useKeybindingsStore = create<KeybindingsState>()(
 				>;
 				return {
 					...current,
-					keybindings: new Map(typedEntries),
+					keybindings: mergeKeybindingsWithDefaults({
+						stored: typedEntries,
+						isCustomized: persisted.isCustomized,
+						defaults: current.keybindings,
+					}),
 					isCustomized: persisted.isCustomized,
 				};
 			},
