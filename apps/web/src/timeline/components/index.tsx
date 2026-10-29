@@ -1,6 +1,8 @@
 "use client";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Slider } from "@/components/ui/slider";
+import { VOLUME_DB_MAX, VOLUME_DB_MIN } from "@/timeline/audio-constants";
 import {
 	Delete02Icon,
 	MagicWand05Icon,
@@ -671,18 +673,30 @@ function TrackLabelsPanel({
 											style={{ height: `${baseHeight}px` }}
 										>
 											{canTrackHaveAudio(track) && (
-												<TrackToggleIcon
-													isOff={track.muted}
-													icons={{
-														on: VolumeHighIcon,
-														off: VolumeOffIcon,
-													}}
-													onClick={() =>
-														editor.timeline.toggleTrackMute({
-															trackId: track.id,
-														})
-													}
-												/>
+												<>
+													<TrackVolumeSlider
+														volumeDb={track.volume ?? 0}
+														isMuted={track.muted}
+														onChange={(volume) =>
+															editor.timeline.setTrackVolume({
+																trackId: track.id,
+																volume,
+															})
+														}
+													/>
+													<TrackToggleIcon
+														isOff={track.muted}
+														icons={{
+															on: VolumeHighIcon,
+															off: VolumeOffIcon,
+														}}
+														onClick={() =>
+															editor.timeline.toggleTrackMute({
+																trackId: track.id,
+															})
+														}
+													/>
+												</>
 											)}
 											{canTrackBeHidden(track) && (
 												<TrackToggleIcon
@@ -901,6 +915,30 @@ function TimelineGutter({
 
 function TrackIcon({ track }: { track: TimelineTrack }) {
 	return <>{TRACK_ICONS[track.type]}</>;
+}
+
+/** Track fader in dB. Double click resets it to unity. */
+function TrackVolumeSlider({
+	volumeDb,
+	isMuted,
+	onChange,
+}: {
+	volumeDb: number;
+	isMuted: boolean;
+	onChange: (volume: number) => void;
+}) {
+	return (
+		<Slider
+			className={cn("w-14", isMuted && "opacity-40")}
+			value={[volumeDb]}
+			min={VOLUME_DB_MIN}
+			max={VOLUME_DB_MAX}
+			step={1}
+			title={`${volumeDb > 0 ? "+" : ""}${Math.round(volumeDb)} dB`}
+			onValueChange={([value]) => onChange(value)}
+			onDoubleClick={() => onChange(0)}
+		/>
+	);
 }
 
 function TrackToggleIcon({

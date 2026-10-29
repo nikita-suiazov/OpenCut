@@ -496,6 +496,7 @@ export class AudioManager {
 
 		const points = buildAudioGainAutomation({
 			element: clip.timelineElement,
+			trackVolumeDb: clip.trackVolumeDb ?? 0,
 			fromLocalTime: startLocalTime,
 			toLocalTime: clip.duration,
 		});

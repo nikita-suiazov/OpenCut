@@ -32,6 +32,7 @@ import { BatchCommand } from "@/commands";
 import {
 	AddTrackCommand,
 	RemoveTrackCommand,
+	SetTrackVolumeCommand,
 	ToggleTrackMuteCommand,
 	ToggleTrackVisibilityCommand,
 	InsertElementCommand,
@@ -176,6 +177,17 @@ export class TimelineManager {
 
 	toggleTrackMute({ trackId }: { trackId: string }): void {
 		const command = new ToggleTrackMuteCommand(trackId);
+		this.editor.command.execute({ command });
+	}
+
+	setTrackVolume({
+		trackId,
+		volume,
+	}: {
+		trackId: string;
+		volume: number;
+	}): void {
+		const command = new SetTrackVolumeCommand(trackId, volume);
 		this.editor.command.execute({ command });
 	}
 

@@ -1,13 +1,19 @@
 import { hasKeyframesForPath } from "@/animation/keyframe-query";
 import { resolveNumberAtTime } from "@/animation/values";
 import { VOLUME_DB_MAX, VOLUME_DB_MIN } from "./audio-constants";
-import type { TimelineElement } from "./types";
+import type { TimelineElement, TimelineTrack } from "./types";
+import { canTrackHaveAudio } from "./track-capabilities";
 const DEFAULT_STEP_SECONDS = 1 / 60;
 
 export type AudioCapableElement = Extract<
 	TimelineElement,
 	{ type: "audio" | "video" }
 >;
+
+/** Track fader in dB; silent tracks (text, graphics) never have one. */
+export function getTrackVolumeDb(track: TimelineTrack): number {
+	return canTrackHaveAudio(track) ? (track.volume ?? 0) : 0;
+}
 
 export function clampDb(value: number): number {
 	if (!Number.isFinite(value)) {
@@ -54,10 +60,13 @@ import { TICKS_PER_SECOND } from "@/wasm";
 export function resolveEffectiveAudioGain({
 	element,
 	trackMuted = false,
+	trackVolumeDb = 0,
 	localTime,
 }: {
 	element: AudioCapableElement;
 	trackMuted?: boolean;
+	/** Track fader, added to the element's own dB before conversion. */
+	trackVolumeDb?: number;
 	localTime: number;
 }): number {
 	if (trackMuted || isElementMuted({ element })) {
@@ -71,7 +80,7 @@ export function resolveEffectiveAudioGain({
 		localTime: Math.round(localTime * TICKS_PER_SECOND),
 	});
 
-	return dBToLinear(resolvedDb);
+	return dBToLinear(resolvedDb + trackVolumeDb);
 }
 
 export function buildWaveformGainSamples({
@@ -91,12 +100,14 @@ export function buildWaveformGainSamples({
 export function buildAudioGainAutomation({
 	element,
 	trackMuted = false,
+	trackVolumeDb = 0,
 	fromLocalTime,
 	toLocalTime,
 	stepSeconds = DEFAULT_STEP_SECONDS,
 }: {
 	element: AudioCapableElement;
 	trackMuted?: boolean;
+	trackVolumeDb?: number;
 	fromLocalTime: number;
 	toLocalTime: number;
 	stepSeconds?: number;
@@ -115,6 +126,7 @@ export function buildAudioGainAutomation({
 			gain: resolveEffectiveAudioGain({
 				element,
 				trackMuted,
+				trackVolumeDb,
 				localTime,
 			}),
 		});
@@ -125,6 +137,7 @@ export function buildAudioGainAutomation({
 		gain: resolveEffectiveAudioGain({
 			element,
 			trackMuted,
+			trackVolumeDb,
 			localTime: endTime,
 		}),
 	});
