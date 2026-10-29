@@ -390,6 +390,7 @@ export const textMaskDefinition: MaskDefinition<"text"> = {
 					ctx,
 					layout,
 					textColor: "#ffffff",
+					colorRuns: false,
 					background: null,
 				});
 				ctx.restore();
@@ -424,6 +425,7 @@ export const textMaskDefinition: MaskDefinition<"text"> = {
 						ctx,
 						layout,
 						textColor: "#ffffff",
+						colorRuns: false,
 						background: null,
 					});
 				}
@@ -434,6 +436,7 @@ export const textMaskDefinition: MaskDefinition<"text"> = {
 						ctx,
 						layout,
 						textColor: "#ffffff",
+						colorRuns: false,
 						background: null,
 					});
 				}

@@ -9,6 +9,7 @@ import {
 	setCanvasLetterSpacing,
 } from "./layout";
 import { FONT_SIZE_SCALE_REFERENCE } from "./typography";
+import { parseTextRuns, type TextRun } from "./runs";
 
 export type TextAlign = "left" | "center" | "right";
 export type TextFontWeight = "normal" | "bold";
@@ -38,8 +39,12 @@ export interface ResolvedTextLayout {
 }
 
 export interface MeasuredTextLayout extends ResolvedTextLayout {
+	/** The lines as drawn: colour markup stripped. */
 	lines: string[];
 	lineMetrics: TextMetrics[];
+	/** Each line's colour runs (`Open [Chat Workspace](#FF9A52)`) and their widths. */
+	lineRuns: TextRun[][];
+	lineRunWidths: number[][];
 	block: TextBlockMeasurement;
 }
 
@@ -51,6 +56,8 @@ export interface ResolvedTextBackgroundLike {
 	offsetX: number;
 	offsetY: number;
 	cornerRadius: number;
+	borderWidth?: number;
+	borderColor?: string;
 }
 
 export function quoteFontFamily({ fontFamily }: { fontFamily: string }): string {
@@ -113,7 +120,10 @@ export function measureTextLayout({
 	ctx: TextCanvasContext;
 }): MeasuredTextLayout {
 	const resolvedLayout = resolveTextLayout({ text, canvasHeight });
-	const lines = text.content.split("\n");
+	// Colour markup is stripped for layout: lines/metrics describe the text as
+	// drawn, lineRuns carries the colours (and widths) for the draw pass.
+	const lineRuns = text.content.split("\n").map(parseTextRuns);
+	const lines = lineRuns.map((runs) => runs.map((run) => run.text).join(""));
 
 	ctx.save();
 	ctx.font = resolvedLayout.fontString;
@@ -123,6 +133,9 @@ export function measureTextLayout({
 		letterSpacingPx: resolvedLayout.letterSpacing,
 	});
 	const lineMetrics = lines.map((line) => ctx.measureText(line));
+	const lineRunWidths = lineRuns.map((runs) =>
+		runs.map((run) => ctx.measureText(run.text).width),
+	);
 	ctx.restore();
 
 	const block = measureTextBlock({
@@ -134,8 +147,58 @@ export function measureTextLayout({
 		...resolvedLayout,
 		lines,
 		lineMetrics,
+		lineRuns,
+		lineRunWidths,
 		block,
 	};
+}
+
+/**
+ * Where each run of a line starts: runs are placed by hand from the line's left
+ * edge, so a line can mix colours and still align like one string.
+ */
+function runStarts({
+	layout,
+	index,
+}: {
+	layout: MeasuredTextLayout;
+	index: number;
+}): number[] {
+	const alignToLeft: Record<TextAlign, number> = {
+		left: 0,
+		center: -layout.lineMetrics[index].width / 2,
+		right: -layout.lineMetrics[index].width,
+	};
+	let x = alignToLeft[layout.textAlign];
+	return layout.lineRunWidths[index].map((width) => {
+		const start = x;
+		x += width;
+		return start;
+	});
+}
+
+/** One line, run by run; a line without markup is one run and one plain call. */
+function paintTextLine({
+	ctx,
+	layout,
+	index,
+	paint,
+}: {
+	ctx: TextCanvasContext;
+	layout: MeasuredTextLayout;
+	index: number;
+	paint: (run: TextRun, x: number) => void;
+}): void {
+	const runs = layout.lineRuns[index];
+	if (runs.length <= 1) {
+		paint(runs[0] ?? { text: layout.lines[index] }, 0);
+		return;
+	}
+	const starts = runStarts({ layout, index });
+	const previousAlign = ctx.textAlign;
+	ctx.textAlign = "left";
+	runs.forEach((run, i) => paint(run, starts[i]));
+	ctx.textAlign = previousAlign;
 }
 
 export function drawMeasuredTextLayout({
@@ -145,6 +208,7 @@ export function drawMeasuredTextLayout({
 	background,
 	backgroundColor,
 	textBaseline = "middle",
+	colorRuns = true,
 }: {
 	ctx: TextCanvasContext;
 	layout: MeasuredTextLayout;
@@ -152,6 +216,8 @@ export function drawMeasuredTextLayout({
 	background?: ResolvedTextBackgroundLike | null;
 	backgroundColor?: string;
 	textBaseline?: CanvasTextBaseline;
+	/** false: every run in textColor (a text mask draws its shape, not its colours). */
+	colorRuns?: boolean;
 }): void {
 	ctx.font = layout.fontString;
 	ctx.textAlign = layout.textAlign;
@@ -193,13 +259,41 @@ export function drawMeasuredTextLayout({
 				radius,
 			);
 			ctx.fill();
+
+			// Outline sits just inside the box, so the element's visual bounds
+			// (selection, snapping) stay the ones the background reports.
+			const borderWidth = (background.borderWidth ?? 0) * layout.fontSizeRatio;
+			const borderColor = background.borderColor;
+			if (borderWidth > 0 && borderColor && borderColor !== "transparent") {
+				const inset = borderWidth / 2;
+				ctx.beginPath();
+				ctx.roundRect(
+					backgroundRect.left + inset,
+					backgroundRect.top + inset,
+					Math.max(0, backgroundRect.width - borderWidth),
+					Math.max(0, backgroundRect.height - borderWidth),
+					Math.max(0, radius - inset),
+				);
+				ctx.lineWidth = borderWidth;
+				ctx.strokeStyle = borderColor;
+				ctx.stroke();
+			}
 			ctx.fillStyle = textColor;
 		}
 	}
 
 	for (let index = 0; index < layout.lines.length; index++) {
 		const lineY = index * layout.lineHeightPx - layout.block.visualCenterOffset;
-		ctx.fillText(layout.lines[index], 0, lineY);
+		paintTextLine({
+			ctx,
+			layout,
+			index,
+			paint: (run, x) => {
+				ctx.fillStyle = (colorRuns && run.color) || textColor;
+				ctx.fillText(run.text, x, lineY);
+			},
+		});
+		ctx.fillStyle = textColor;
 		drawTextDecoration({
 			ctx,
 			textDecoration: layout.textDecoration,
@@ -236,6 +330,11 @@ export function strokeMeasuredTextLayout({
 
 	for (let index = 0; index < layout.lines.length; index++) {
 		const lineY = index * layout.lineHeightPx - layout.block.visualCenterOffset;
-		ctx.strokeText(layout.lines[index], 0, lineY);
+		paintTextLine({
+			ctx,
+			layout,
+			index,
+			paint: (run, x) => ctx.strokeText(run.text, x, lineY),
+		});
 	}
 }

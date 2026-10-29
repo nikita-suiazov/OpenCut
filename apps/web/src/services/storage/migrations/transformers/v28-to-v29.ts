@@ -194,6 +194,9 @@ function copyTextParams({
 		"paddingY",
 		"offsetX",
 		"offsetY",
+		// the fork's background outline (v25 TextBackground.borderWidth/borderColor)
+		"borderWidth",
+		"borderColor",
 	]) {
 		copyPrimitiveParam({
 			source: source.background,

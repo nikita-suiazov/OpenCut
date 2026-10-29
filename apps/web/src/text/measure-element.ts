@@ -220,6 +220,16 @@ export function buildTextBackgroundFromElement({
 			key: "background.offsetY",
 			fallback: DEFAULTS.text.background.offsetY,
 		}),
+		borderWidth: readNumberParam({
+			params: element.params,
+			key: "background.borderWidth",
+			fallback: DEFAULTS.text.background.borderWidth,
+		}),
+		borderColor: readStringParam({
+			params: element.params,
+			key: "background.borderColor",
+			fallback: DEFAULTS.text.background.borderColor,
+		}),
 	};
 }
 

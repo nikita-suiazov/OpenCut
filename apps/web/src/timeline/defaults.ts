@@ -26,6 +26,8 @@ const defaultTextBackground = {
 	paddingY: 42,
 	offsetX: 0,
 	offsetY: 0,
+	borderWidth: 0,
+	borderColor: "#FFFFFF",
 };
 
 const defaultTextElement: Omit<TextElement, "id"> = {
@@ -53,6 +55,8 @@ const defaultTextElement: Omit<TextElement, "id"> = {
 		"background.paddingY": defaultTextBackground.paddingY,
 		"background.offsetX": defaultTextBackground.offsetX,
 		"background.offsetY": defaultTextBackground.offsetY,
+		"background.borderWidth": defaultTextBackground.borderWidth,
+		"background.borderColor": defaultTextBackground.borderColor,
 		"transform.positionX": defaultTransform.position.x,
 		"transform.positionY": defaultTransform.position.y,
 		"transform.scaleX": defaultTransform.scaleX,

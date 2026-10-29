@@ -57,6 +57,8 @@ describe("V28 to V29 Migration", () => {
 												color: "#111111",
 												paddingX: 10,
 												paddingY: 12,
+												borderWidth: 15,
+												borderColor: "#ff9a52",
 											},
 											transform: {
 												position: { x: 1, y: 2 },
@@ -112,6 +114,8 @@ describe("V28 to V29 Migration", () => {
 			color: "#111111",
 			paddingX: 10,
 			paddingY: 12,
+			borderWidth: 15,
+			borderColor: "#ff9a52",
 		});
 		expect(text.params).toMatchObject({
 			content: "Hello",
@@ -128,6 +132,8 @@ describe("V28 to V29 Migration", () => {
 			"background.color": "#111111",
 			"background.paddingX": 10,
 			"background.paddingY": 12,
+			"background.borderWidth": 15,
+			"background.borderColor": "#ff9a52",
 			"transform.positionX": 1,
 			"transform.positionY": 2,
 		});

@@ -324,6 +324,24 @@ const textElementParams: ElementParamDefinition[] = [
 		step: 1,
 		dependencies: [{ param: "background.enabled", equals: true }],
 	},
+	{
+		key: "background.borderWidth",
+		label: "Background Border",
+		type: "number",
+		default: DEFAULTS.text.background.borderWidth,
+		min: 0,
+		step: 1,
+		keyframable: false,
+		dependencies: [{ param: "background.enabled", equals: true }],
+	},
+	{
+		key: "background.borderColor",
+		label: "Background Border Color",
+		type: "color",
+		default: DEFAULTS.text.background.borderColor,
+		keyframable: false,
+		dependencies: [{ param: "background.enabled", equals: true }],
+	},
 ];
 
 export const elementParamRegistry = new DefinitionRegistry<

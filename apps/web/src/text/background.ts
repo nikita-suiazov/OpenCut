@@ -9,4 +9,7 @@ export interface TextBackground {
 	paddingY?: number;
 	offsetX?: number;
 	offsetY?: number;
+	/** Outline drawn just inside the background box. 0 hides it. */
+	borderWidth?: number;
+	borderColor?: string;
 }
