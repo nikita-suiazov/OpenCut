@@ -44,6 +44,8 @@ export function useEditorActions() {
 		e.selection.getSelectedMaskPointSelection(),
 	);
 	const toggleSnapping = useTimelineStore((s) => s.toggleSnapping);
+	const selectedZoomId = useTimelineStore((s) => s.selectedZoomId);
+	const setSelectedZoomId = useTimelineStore((s) => s.setSelectedZoomId);
 	const rippleEditingEnabled = useTimelineStore((s) => s.rippleEditingEnabled);
 	const toggleRippleEditing = useTimelineStore((s) => s.toggleRippleEditing);
 	const hasTimelineSelection =
@@ -66,6 +68,13 @@ export function useEditorActions() {
 			clearTimelineActiveSelectionRef.current();
 		},
 	}));
+
+	// Zoom segment selection is exclusive with element selection.
+	useEffect(() => {
+		if (selectedElements.length > 0) {
+			setSelectedZoomId(null);
+		}
+	}, [selectedElements, setSelectedZoomId]);
 
 	useEffect(() => {
 		if (!hasTimelineSelection) {
@@ -206,6 +215,24 @@ export function useEditorActions() {
 					}),
 				}),
 			});
+		},
+		undefined,
+	);
+
+	useActionHandler(
+		"add-zoom",
+		() => {
+			const zoomId = editor.scenes.addZoom({
+				time: editor.playback.getCurrentTime(),
+			});
+			if (!zoomId) {
+				toast.error("Can't place a zoom here", {
+					description: "A zoom already exists at this position",
+				});
+				return;
+			}
+			setElementSelection({ elements: [] });
+			setSelectedZoomId(zoomId);
 		},
 		undefined,
 	);
@@ -380,6 +407,11 @@ export function useEditorActions() {
 	useActionHandler(
 		"delete-selected",
 		() => {
+			if (selectedZoomId) {
+				editor.scenes.removeZoom({ zoomId: selectedZoomId });
+				setSelectedZoomId(null);
+				return;
+			}
 			switch (editor.selection.getActiveSelectionKind()) {
 				case "mask-points":
 					if (!selectedMaskPointSelection) {
@@ -487,6 +519,7 @@ export function useEditorActions() {
 			if (!clearActiveScope()) {
 				editor.selection.clearMostSpecificSelection();
 			}
+			setSelectedZoomId(null);
 		},
 		undefined,
 	);

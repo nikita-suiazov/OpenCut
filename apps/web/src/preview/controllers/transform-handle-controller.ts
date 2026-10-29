@@ -1,4 +1,5 @@
 import type { PointerEvent as ReactPointerEvent } from "react";
+import type { ZoomCamera } from "@/timeline/zoom-segments";
 import type { MediaAsset } from "@/media/types";
 import {
 	getVisibleElementsWithBounds,
@@ -126,6 +127,8 @@ export interface SceneReader {
 	getCurrentTime: () => number;
 	getMediaAssets: () => MediaAsset[];
 	getCanvasSize: () => CanvasSize;
+	/** The zoom camera on the frame right now; null when none. */
+	getCamera?: () => ZoomCamera | null;
 }
 
 export interface TimelinePreviewUpdate {
@@ -548,6 +551,7 @@ export class TransformHandleController {
 			currentTime: this.deps.scene.getCurrentTime(),
 			canvasSize: this.deps.scene.getCanvasSize(),
 			mediaAssets: this.deps.scene.getMediaAssets(),
+			camera: this.deps.scene.getCamera?.() ?? null,
 		});
 	}
 

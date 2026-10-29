@@ -4,9 +4,11 @@ import type {
 } from "react";
 import type { MediaAsset } from "@/media/types";
 import {
+	elementFollowsCamera,
 	getVisibleElementsWithBounds,
 	type ElementWithBounds,
 } from "@/preview/element-bounds";
+import type { ZoomCamera } from "@/timeline/zoom-segments";
 import {
 	getHitElements,
 	hitTest,
@@ -53,6 +55,8 @@ interface DragElementSnapshot {
 	readonly elementId: string;
 	readonly initialTransform: Transform;
 	readonly initialParams: ParamValues;
+	/** Frame-space pointer travel is this much element-space travel. */
+	readonly cameraScale: number;
 }
 
 interface DraggingGesture extends CapturedPointerState {
@@ -103,6 +107,8 @@ export interface SceneReader {
 	getCurrentTime: () => number;
 	getMediaAssets: () => MediaAsset[];
 	getCanvasSize: () => TCanvasSize;
+	/** The zoom camera on the frame right now; null when none. */
+	getCamera?: () => ZoomCamera | null;
 }
 
 export interface SelectionApi {
@@ -206,8 +212,10 @@ function movedPastDragThreshold({
 
 function toDragElementSnapshots({
 	elementsWithTracks,
+	camera,
 }: {
 	elementsWithTracks: Array<{ track: TimelineTrack; element: TimelineElement }>;
+	camera: ZoomCamera | null;
 }): DragElementSnapshot[] {
 	const isVisualTrackedElement = (value: {
 		track: TimelineTrack;
@@ -222,6 +230,8 @@ function toDragElementSnapshots({
 			elementId: element.id,
 			initialTransform: buildTransformFromParams({ params: element.params }),
 			initialParams: element.params,
+			cameraScale:
+				camera && elementFollowsCamera({ element }) ? camera.scale : 1,
 		}));
 }
 
@@ -464,6 +474,7 @@ export class PreviewInteractionController {
 			currentTime: this.deps.scene.getCurrentTime(),
 			canvasSize: this.deps.scene.getCanvasSize(),
 			mediaAssets: this.deps.scene.getMediaAssets(),
+			camera: this.deps.scene.getCamera?.() ?? null,
 		});
 	}
 
@@ -488,11 +499,17 @@ export class PreviewInteractionController {
 			selectedElements: pending.selectedElements,
 			dragTarget,
 		});
+		const camera = this.deps.scene.getCamera?.() ?? null;
 		const draggableElements = toDragElementSnapshots({
 			elementsWithTracks: this.deps.timeline.getElementsWithTracks({
 				elements: dragSelection,
 			}),
+			camera,
 		});
+		const dragTargetCameraScale =
+			camera && elementFollowsCamera({ element: dragTarget.element })
+				? camera.scale
+				: 1;
 
 		if (draggableElements.length === 0) {
 			this.gesture = IDLE_GESTURE;
@@ -516,8 +533,9 @@ export class PreviewInteractionController {
 			pointerId: pending.pointerId,
 			captureTarget: pending.captureTarget,
 			bounds: {
-				width: dragTarget.bounds.width,
-				height: dragTarget.bounds.height,
+				// Snapping happens in element space, against the canvas edges.
+				width: dragTarget.bounds.width / dragTargetCameraScale,
+				height: dragTarget.bounds.height / dragTargetCameraScale,
 				rotation: dragTarget.bounds.rotation,
 			},
 			elements: draggableElements,
@@ -535,8 +553,10 @@ export class PreviewInteractionController {
 		const firstElement = drag.elements[0];
 		if (!firstElement) return;
 
-		const deltaX = currentPos.x - drag.origin.x;
-		const deltaY = currentPos.y - drag.origin.y;
+		// Pointer travel is frame-space; element positions are not. Under a zoom
+		// camera the element moves cameraScale x less than the pointer.
+		const deltaX = (currentPos.x - drag.origin.x) / firstElement.cameraScale;
+		const deltaY = (currentPos.y - drag.origin.y) / firstElement.cameraScale;
 
 		const proposedPosition = {
 			x: firstElement.initialTransform.position.x + deltaX,
@@ -560,7 +580,22 @@ export class PreviewInteractionController {
 					activeLines: [] as SnapLine[],
 				};
 
-		this.deps.preview.onSnapLinesChange?.(activeLines);
+		// Guides are drawn straight onto the frame, so they follow the camera
+		// unless the dragged element is pinned to the screen.
+		const camera =
+			firstElement.cameraScale === 1
+				? null
+				: (this.deps.scene.getCamera?.() ?? null);
+		this.deps.preview.onSnapLinesChange?.(
+			camera
+				? activeLines.map((line) => ({
+						...line,
+						position:
+							line.position * camera.scale +
+							(line.type === "vertical" ? camera.translateX : camera.translateY),
+					}))
+				: activeLines,
+		);
 
 		const deltaSnappedX =
 			snappedPosition.x - firstElement.initialTransform.position.x;
@@ -568,17 +603,26 @@ export class PreviewInteractionController {
 			snappedPosition.y - firstElement.initialTransform.position.y;
 
 		this.deps.timeline.previewElements(
-			drag.elements.map(({ trackId, elementId, initialTransform, initialParams }) => ({
-				trackId,
-				elementId,
-				updates: {
-					params: {
-						...initialParams,
-						"transform.positionX": initialTransform.position.x + deltaSnappedX,
-						"transform.positionY": initialTransform.position.y + deltaSnappedY,
-					},
+			drag.elements.map(
+				({ trackId, elementId, initialTransform, initialParams, cameraScale }) => {
+					// Snapped travel came out in the drag target's space; a co-dragged
+					// element on the other side of the camera needs it rescaled.
+					const ratio = firstElement.cameraScale / cameraScale;
+					return {
+						trackId,
+						elementId,
+						updates: {
+							params: {
+								...initialParams,
+								"transform.positionX":
+									initialTransform.position.x + deltaSnappedX * ratio,
+								"transform.positionY":
+									initialTransform.position.y + deltaSnappedY * ratio,
+							},
+						},
+					};
 				},
-			})),
+			),
 		);
 	}
 }

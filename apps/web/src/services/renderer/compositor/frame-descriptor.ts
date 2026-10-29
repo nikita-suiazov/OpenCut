@@ -26,13 +26,20 @@ import type {
 	TextureUploadDescriptor,
 } from "./types";
 import { DEFAULT_GRAPHIC_SOURCE_SIZE } from "@/graphics";
+import {
+	getZoomCameraAtTime,
+	type ZoomCamera,
+} from "@/timeline/zoom-segments";
 
 export async function buildFrameDescriptor({
 	node,
 	renderer,
+	time = 0,
 }: {
 	node: AnyBaseNode;
 	renderer: CanvasRenderer;
+	/** Timeline ticks of the frame, for the zoom camera. */
+	time?: number;
 }): Promise<{
 	frame: FrameDescriptor;
 	textures: TextureUploadDescriptor[];
@@ -40,12 +47,23 @@ export async function buildFrameDescriptor({
 	const items: FrameItemDescriptor[] = [];
 	const textures = new Map<string, TextureUploadDescriptor>();
 
+	const camera =
+		node instanceof RootNode
+			? getZoomCameraAtTime({
+					zooms: node.params.zooms ?? [],
+					time,
+					width: renderer.width,
+					height: renderer.height,
+				})
+			: null;
+
 	await collectNode({
 		node,
 		renderer,
 		path: "root",
 		items,
 		textures,
+		camera,
 	});
 
 	incrementCounter({ name: "frameItems", by: items.length });
@@ -70,12 +88,14 @@ async function collectNode({
 	path,
 	items,
 	textures,
+	camera,
 }: {
 	node: AnyBaseNode;
 	renderer: CanvasRenderer;
 	path: string;
 	items: FrameItemDescriptor[];
 	textures: Map<string, TextureUploadDescriptor>;
+	camera: ZoomCamera | null;
 }): Promise<void> {
 	if (node instanceof RootNode) {
 		for (let index = 0; index < node.children.length; index++) {
@@ -85,6 +105,7 @@ async function collectNode({
 				path: `${path}:${index}`,
 				items,
 				textures,
+				camera,
 			});
 		}
 		return;
@@ -111,7 +132,10 @@ async function collectNode({
 		items.push({
 			type: "layer",
 			textureId,
-			transform: fullCanvasTransform(renderer),
+			transform: applyCameraToQuad({
+				quad: fullCanvasTransform(renderer),
+				camera,
+			}),
 			opacity: 1,
 			blendMode: "normal",
 			effectPassGroups: [],
@@ -169,7 +193,10 @@ async function collectNode({
 		items.push({
 			type: "layer",
 			textureId,
-			transform: fullCanvasTransform(renderer),
+			transform: applyCameraToQuad({
+				quad: fullCanvasTransform(renderer),
+				camera,
+			}),
 			opacity: 1,
 			blendMode: "normal",
 			effectPassGroups: [passes],
@@ -190,6 +217,7 @@ async function collectNode({
 			path,
 			items,
 			textures,
+			camera,
 		});
 		return;
 	}
@@ -211,12 +239,14 @@ async function collectVisualSourceNode({
 	path,
 	items,
 	textures,
+	camera,
 }: {
 	node: VideoNode | ImageNode | StickerNode | GraphicNode;
 	renderer: CanvasRenderer;
 	path: string;
 	items: FrameItemDescriptor[];
 	textures: Map<string, TextureUploadDescriptor>;
+	camera: ZoomCamera | null;
 }) {
 	if (!node.resolved) {
 		return;
@@ -248,11 +278,14 @@ async function collectVisualSourceNode({
 		height: sourceHeight,
 	});
 
-	const transform = computeVisualTransform({
-		renderer,
-		resolved: node.resolved,
-		sourceWidth,
-		sourceHeight,
+	const transform = applyCameraToQuad({
+		quad: computeVisualTransform({
+			renderer,
+			resolved: node.resolved,
+			sourceWidth,
+			sourceHeight,
+		}),
+		camera,
 	});
 	const { mask, strokeLayer } = buildMaskArtifacts({
 		node,
@@ -352,6 +385,30 @@ function computeVisualTransform({
 		rotationDegrees: resolved.transform.rotate,
 		flipX: scaledWidth < 0,
 		flipY: scaledHeight < 0,
+	};
+}
+
+/**
+ * Applies the global zoom camera to a quad: p' = p * scale + translate,
+ * uniform scale so rotation is unaffected. Mask artifacts stay aligned
+ * because they are rasterized from the already camera-adjusted quad. Text is
+ * screen-space and never goes through this: captions and titles stay put
+ * while the camera moves the footage under them.
+ */
+function applyCameraToQuad({
+	quad,
+	camera,
+}: {
+	quad: QuadTransformDescriptor;
+	camera: ZoomCamera | null;
+}): QuadTransformDescriptor {
+	if (!camera) return quad;
+	return {
+		...quad,
+		centerX: quad.centerX * camera.scale + camera.translateX,
+		centerY: quad.centerY * camera.scale + camera.translateY,
+		width: quad.width * camera.scale,
+		height: quad.height * camera.scale,
 	};
 }
 

@@ -78,6 +78,7 @@ import {
 	TimelineBookmarksRow,
 	useBookmarkDrag,
 } from "@/timeline/bookmarks/index";
+import { TimelineZoomsRow } from "./zoom-lane";
 import { useEdgeAutoScroll } from "@/timeline/hooks/use-edge-auto-scroll";
 import { useInitialScrollBottom } from "@/timeline/hooks/use-initial-scroll-bottom";
 import { useTimelineResize } from "@/timeline/hooks/use-timeline-resize";
@@ -494,6 +495,14 @@ export function Timeline() {
 								dynamicTimelineWidth={dynamicTimelineWidth}
 								dragState={bookmarkDragState}
 								onBookmarkMouseDown={handleBookmarkMouseDown}
+								handleWheel={handleWheel}
+								handleTimelineContentClick={handleRulerClick}
+								handleRulerTrackingMouseDown={handleRulerMouseDown}
+								handleRulerMouseDown={handlePlayheadRulerMouseDown}
+							/>
+							<TimelineZoomsRow
+								zoomLevel={zoomLevel}
+								dynamicTimelineWidth={dynamicTimelineWidth}
 								handleWheel={handleWheel}
 								handleTimelineContentClick={handleRulerClick}
 								handleRulerTrackingMouseDown={handleRulerMouseDown}

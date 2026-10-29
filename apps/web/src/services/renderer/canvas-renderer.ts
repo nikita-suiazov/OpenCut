@@ -57,7 +57,7 @@ export class CanvasRenderer {
 		});
 		const { frame, textures } = await measureSpanAsync({
 			name: "buildFrame",
-			fn: () => buildFrameDescriptor({ node, renderer: this }),
+			fn: () => buildFrameDescriptor({ node, renderer: this, time }),
 		});
 		wasmCompositor.ensureInitialized({
 			width: this.width,

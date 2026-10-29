@@ -1,4 +1,5 @@
 import type { SceneTracks, TimelineElement } from "@/timeline";
+import type { ZoomCamera } from "@/timeline/zoom-segments";
 import type { MediaAsset } from "@/media/types";
 import { STICKER_INTRINSIC_SIZE_FALLBACK } from "@/stickers/intrinsic-size";
 import { DEFAULT_GRAPHIC_SOURCE_SIZE } from "@/graphics";
@@ -245,16 +246,49 @@ export function getEdgeHandlePosition({
 	};
 }
 
+/**
+ * Text is screen-space: the zoom camera moves the footage under it but leaves
+ * captions where they were placed (see applyCameraToQuad in the frame
+ * descriptor). Everything else is part of the scene and rides the camera.
+ */
+export function elementFollowsCamera({
+	element,
+}: {
+	element: TimelineElement;
+}): boolean {
+	return element.type !== "text";
+}
+
+/** Element-space bounds → what the frame actually shows. */
+function applyCameraToBounds({
+	bounds,
+	camera,
+}: {
+	bounds: ElementBounds;
+	camera: ZoomCamera;
+}): ElementBounds {
+	return {
+		...bounds,
+		cx: bounds.cx * camera.scale + camera.translateX,
+		cy: bounds.cy * camera.scale + camera.translateY,
+		width: bounds.width * camera.scale,
+		height: bounds.height * camera.scale,
+	};
+}
+
 export function getVisibleElementsWithBounds({
 	tracks,
 	currentTime,
 	canvasSize,
 	mediaAssets,
+	camera = null,
 }: {
 	tracks: SceneTracks;
 	currentTime: number;
 	canvasSize: { width: number; height: number };
 	mediaAssets: MediaAsset[];
+	/** Zoom camera in effect at currentTime; bounds come back in frame space. */
+	camera?: ZoomCamera | null;
 }): ElementWithBounds[] {
 	const mediaMap = new Map(mediaAssets.map((m) => [m.id, m]));
 	const orderedTracks = [
@@ -299,7 +333,10 @@ export function getVisibleElementsWithBounds({
 					trackId: track.id,
 					elementId: element.id,
 					element,
-					bounds,
+					bounds:
+						camera && elementFollowsCamera({ element })
+							? applyCameraToBounds({ bounds, camera })
+							: bounds,
 				});
 			}
 		}

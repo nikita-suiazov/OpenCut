@@ -3,6 +3,7 @@ import { useEditor } from "@/editor/use-editor";
 import { useCommittedRef } from "@/hooks/use-committed-ref";
 import { useShiftKey } from "@/hooks/use-shift-key";
 import { usePreviewViewport } from "@/preview/components/preview-viewport";
+import { usePreviewCamera } from "@/preview/hooks/use-preview-camera";
 import type { SnapLine } from "@/preview/preview-snap";
 import { registerCanceller } from "@/editor/cancel-interaction";
 import {
@@ -23,6 +24,7 @@ export function usePreviewInteraction({
 	const editor = useEditor();
 	const isShiftHeldRef = useShiftKey();
 	const viewport = usePreviewViewport();
+	const camera = usePreviewCamera();
 	const deps: PreviewInteractionDeps = {
 		viewport: {
 			screenToCanvas: viewport.screenToCanvas,
@@ -36,6 +38,7 @@ export function usePreviewInteraction({
 			getCurrentTime: () => editor.playback.getCurrentTime(),
 			getMediaAssets: () => editor.media.getAssets(),
 			getCanvasSize: () => editor.project.getActive().settings.canvasSize,
+			getCamera: () => camera,
 		},
 		selection: {
 			getSelected: () => editor.selection.getSelectedElements(),

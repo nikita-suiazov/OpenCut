@@ -1,5 +1,6 @@
 import { useEffect, useReducer, useState } from "react";
 import { usePreviewViewport } from "@/preview/components/preview-viewport";
+import { usePreviewCamera } from "@/preview/hooks/use-preview-camera";
 import type { OnSnapLinesChange } from "@/preview/hooks/use-preview-interaction";
 import { useEditor } from "@/editor/use-editor";
 import { useCommittedRef } from "@/hooks/use-committed-ref";
@@ -16,6 +17,7 @@ export function useTransformHandles({
 	onSnapLinesChange?: OnSnapLinesChange;
 }) {
 	const viewport = usePreviewViewport();
+	const camera = usePreviewCamera();
 	const editor = useEditor();
 	const isShiftHeldRef = useShiftKey();
 	const selectedElements = useEditor((e) => e.selection.getSelectedElements());
@@ -38,6 +40,7 @@ export function useTransformHandles({
 			getCurrentTime: () => currentTime,
 			getMediaAssets: () => mediaAssets,
 			getCanvasSize: () => canvasSize,
+			getCamera: () => camera,
 		},
 		timeline: {
 			previewElements: (updates) =>

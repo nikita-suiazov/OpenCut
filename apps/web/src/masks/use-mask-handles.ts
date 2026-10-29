@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { usePreviewCamera } from "@/preview/hooks/use-preview-camera";
 import { usePreviewViewport } from "@/preview/components/preview-viewport";
 import { useEditor } from "@/editor/use-editor";
 import { useShiftKey } from "@/hooks/use-shift-key";
@@ -118,11 +119,13 @@ export function useMaskHandles({
 		e.selection.getSelectedMaskPointSelection(),
 	);
 
+	const camera = usePreviewCamera();
 	const elementsWithBounds = getVisibleElementsWithBounds({
 		tracks,
 		currentTime,
 		canvasSize,
 		mediaAssets,
+		camera,
 	});
 
 	const selectedWithMask =

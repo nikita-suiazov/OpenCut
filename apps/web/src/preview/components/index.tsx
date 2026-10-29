@@ -12,6 +12,8 @@ import type { RootNode } from "@/services/renderer/nodes/root-node";
 import { buildScene } from "@/services/renderer/scene-builder";
 import { PreviewOverlayLayer } from "./overlay-layer";
 import { PreviewInteractionOverlay } from "./preview-interaction-overlay";
+import { ZoomRegionOverlay } from "./zoom-region-overlay";
+import { useTimelineStore } from "@/timeline/timeline-store";
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import type {
 	PreviewOverlayControl,
@@ -97,8 +99,13 @@ function RenderTreeController() {
 	const tracks = useEditor(
 		(e) => e.timeline.getPreviewTracks() ?? e.scenes.getActiveScene().tracks,
 	);
+	const sceneZooms = useEditor((e) => e.scenes.getActiveSceneOrNull()?.zooms);
 	const mediaAssets = useEditor((e) => e.media.getAssets());
 	const activeProject = useEditor((e) => e.project.getActive());
+	// While a zoom segment is being edited, preview the un-zoomed frame so the
+	// region rect overlay maps 1:1 to the canvas.
+	const selectedZoomId = useTimelineStore((s) => s.selectedZoomId);
+	const zooms = selectedZoomId ? [] : (sceneZooms ?? []);
 
 	const { width, height } = usePreviewSize();
 
@@ -113,10 +120,18 @@ function RenderTreeController() {
 			canvasSize: { width, height },
 			background: activeProject.settings.background,
 			isPreview: true,
+			zooms,
 		});
 
 		editor.renderer.setRenderTree({ renderTree });
-	}, [tracks, mediaAssets, activeProject?.settings.background, width, height]);
+	}, [
+		tracks,
+		zooms,
+		mediaAssets,
+		activeProject?.settings.background,
+		width,
+		height,
+	]);
 
 	return null;
 }
@@ -327,6 +342,7 @@ function PreviewCanvas({
 									plane="under-interaction"
 								/>
 								<PreviewInteractionOverlay />
+								<ZoomRegionOverlay />
 								<PreviewOverlayLayer
 									instances={overlayInstances}
 									plane="over-interaction"

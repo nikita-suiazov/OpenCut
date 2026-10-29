@@ -82,6 +82,10 @@ export const ACTIONS = {
 		description: "Freeze frame at playhead",
 		category: "editing",
 	},
+	"add-zoom": {
+		description: "Add zoom at playhead",
+		category: "editing",
+	},
 	"delete-selected": {
 		description: "Delete current selection",
 		category: "editing",
@@ -169,6 +173,7 @@ const ACTION_DEFAULT_SHORTCUTS = [
 	["split", ["s"]],
 	["split-left", ["q"]],
 	["split-right", ["w"]],
+	["add-zoom", ["z"]],
 	["delete-selected", ["backspace", "delete"]],
 	["copy-selected", ["ctrl+c"]],
 	["paste-copied", ["ctrl+v"]],
