@@ -1,3 +1,8 @@
+export interface SoundCredit {
+	author: string;
+	license: string;
+}
+
 export interface SoundEffect {
 	id: number;
 	name: string;

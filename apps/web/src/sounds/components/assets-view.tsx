@@ -24,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useInfiniteScroll } from "@/hooks/use-infinite-scroll";
 import { useSoundSearch } from "@/sounds/use-sound-search";
 import { useSoundsStore } from "@/sounds/sounds-store";
+import { SOUND_CATEGORIES } from "@/sounds/catalog";
 import type { SavedSound, SoundEffect } from "@/sounds/types";
 import { cn } from "@/utils/ui";
 import {
@@ -263,6 +264,11 @@ function SoundEffectsView() {
 				</DropdownMenu>
 			</div>
 
+			<CategoryChips
+				active={searchQuery}
+				onSelect={(query) => setSearchQuery({ query })}
+			/>
+
 			<div className="relative h-full overflow-hidden">
 				<ScrollArea
 					className="h-full flex-1"
@@ -299,6 +305,40 @@ function SoundEffectsView() {
 					</div>
 				</ScrollArea>
 			</div>
+		</div>
+	);
+}
+
+interface CategoryChipsProps {
+	active: string;
+	onSelect: (query: string) => void;
+}
+
+// The bundled library tags every sound with its category id, so filtering by
+// category is just a search — no separate fetch, and it narrows Freesound too.
+function CategoryChips({ active, onSelect }: CategoryChipsProps) {
+	return (
+		<div className="-mt-2 flex flex-wrap gap-1.5">
+			{SOUND_CATEGORIES.map((category) => {
+				const isActive = active === category.id;
+
+				return (
+					<button
+						key={category.id}
+						type="button"
+						title={category.description}
+						onClick={() => onSelect(isActive ? "" : category.id)}
+						className={cn(
+							"rounded-full border px-2.5 py-1 text-xs transition-colors",
+							isActive
+								? "border-primary bg-primary text-primary-foreground"
+								: "border-border text-muted-foreground hover:text-foreground",
+						)}
+					>
+						{category.label}
+					</button>
+				);
+			})}
 		</div>
 	);
 }
@@ -445,10 +485,10 @@ function SavedSoundsView() {
 							</Button>
 							<Button
 								variant="destructive"
-								onClick={async ({
-									stopPropagation,
-								}: React.MouseEvent<HTMLButtonElement>) => {
-									stopPropagation();
+								onClick={async (
+									event: React.MouseEvent<HTMLButtonElement>,
+								) => {
+									event.stopPropagation();
 									await clearSavedSounds();
 									setShowClearDialog(false);
 								}}
@@ -493,17 +533,17 @@ function AudioItem({ sound, isPlaying, onPlay }: AudioItemProps) {
 		onPlay({ sound });
 	};
 
-	const handleSaveClick = ({
-		stopPropagation,
-	}: React.MouseEvent<HTMLButtonElement>) => {
-		stopPropagation();
+	// React's synthetic stopPropagation reads `this`, so it has to stay attached
+	// to the event — destructuring it off throws on every click.
+	const handleSaveClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+		event.stopPropagation();
 		toggleSavedSound({ soundEffect: sound });
 	};
 
-	const handleAddToTimeline = async ({
-		stopPropagation,
-	}: React.MouseEvent<HTMLButtonElement>) => {
-		stopPropagation();
+	const handleAddToTimeline = async (
+		event: React.MouseEvent<HTMLButtonElement>,
+	) => {
+		event.stopPropagation();
 		await addSoundToTimeline({ sound });
 	};
 
