@@ -278,9 +278,11 @@ export class VideoCache {
 				throw new Error("Video codec not supported for decoding");
 			}
 
+			// alpha: a WebM with transparency (VP8/VP9 alpha) stays see-through instead of turning black
 			const sink = new CanvasSink(videoTrack, {
 				poolSize: 3,
 				fit: "contain",
+				alpha: true,
 			});
 
 			this.sinks.set(mediaId, {
