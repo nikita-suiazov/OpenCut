@@ -74,6 +74,7 @@ import {
 	Exchange01Icon,
 	KeyframeIcon,
 	MagicWand05Icon,
+	SnowIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { uppercase } from "@/utils/string";
@@ -429,6 +430,14 @@ export function TimelineElement({
 					>
 						Split
 					</ActionMenuItem>
+					{element.type === "video" && (
+						<ActionMenuItem
+							action="freeze-frame"
+							icon={<HugeiconsIcon icon={SnowIcon} />}
+						>
+							Freeze frame
+						</ActionMenuItem>
+					)}
 					<CopyMenuItem />
 					{selectedElements.length === 1 && (
 						<ActionMenuItem
@@ -1091,16 +1100,27 @@ function TiledMediaContent({
 	const mediaAssets = useEditor((e) => e.media.getAssets());
 
 	const mediaAsset = mediaAssets.find((asset) => asset.id === element.mediaId);
+	// Video clips draw flat, without a filmstrip (the owner's preference); stills
+	// keep their thumbnail.
 	const imageUrl =
 		element.type === "video"
-			? mediaAsset?.thumbnailUrl
+			? undefined
 			: (mediaAsset?.thumbnailUrl ?? mediaAsset?.url);
 
 	if (!imageUrl) {
 		return (
-			<span className="text-foreground/80 truncate text-xs">
-				{element.name}
-			</span>
+			<>
+				<div
+					className="absolute inset-0"
+					style={{
+						backgroundColor: "var(--muted)",
+						pointerEvents: "none",
+					}}
+				/>
+				<span className="text-foreground/80 relative truncate text-xs">
+					{element.name}
+				</span>
+			</>
 		);
 	}
 

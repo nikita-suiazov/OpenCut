@@ -78,6 +78,10 @@ export const ACTIONS = {
 		description: "Split and remove right",
 		category: "editing",
 	},
+	"freeze-frame": {
+		description: "Freeze frame at playhead",
+		category: "editing",
+	},
 	"delete-selected": {
 		description: "Delete current selection",
 		category: "editing",

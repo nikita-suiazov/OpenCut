@@ -3,6 +3,7 @@ import {
 	ALL_FORMATS,
 	BlobSource,
 	VideoSampleSink,
+	CanvasSink,
 	type VideoCodec,
 } from "mediabunny";
 import { createTimelineAudioBuffer } from "@/media/audio";
@@ -203,4 +204,56 @@ function writeString({
 	for (let i = 0; i < str.length; i++) {
 		view.setUint8(offset + i, str.charCodeAt(i));
 	}
+}
+
+/** One frame of a video, as a PNG file (the freeze frame's still). */
+export async function extractVideoFrame({
+	videoFile,
+	time,
+	fileName,
+}: {
+	videoFile: File;
+	time: number;
+	fileName: string;
+}): Promise<File> {
+	const input = new Input({
+		source: new BlobSource(videoFile),
+		formats: ALL_FORMATS,
+	});
+
+	try {
+		const videoTrack = await input.getPrimaryVideoTrack();
+		if (!videoTrack) {
+			throw new Error("No video track found in the file");
+		}
+
+		const sink = new CanvasSink(videoTrack, { alpha: true });
+		const frame = await sink.getCanvas(Math.max(0, time));
+		if (!frame) {
+			throw new Error("Could not decode video frame");
+		}
+
+		const blob = await canvasToPngBlob({ canvas: frame.canvas });
+		return new File([blob], fileName, { type: "image/png" });
+	} finally {
+		input.dispose();
+	}
+}
+
+async function canvasToPngBlob({
+	canvas,
+}: {
+	canvas: HTMLCanvasElement | OffscreenCanvas;
+}): Promise<Blob> {
+	if ("convertToBlob" in canvas) {
+		return canvas.convertToBlob({ type: "image/png" });
+	}
+
+	return new Promise<Blob>((resolve, reject) => {
+		canvas.toBlob(
+			(blob) =>
+				blob ? resolve(blob) : reject(new Error("Failed to encode frame")),
+			"image/png",
+		);
+	});
 }
